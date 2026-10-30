@@ -27,7 +27,7 @@ Public users may request Institution Head or Regional Officer access. Institutio
 | Human oversight | Workflow actions support review; final statutory decisions remain with competent authorities |
 
 ## 4. Distinctive features
-- Institution-domain-aware onboarding with Admin approval to prevent unauthorised self-assigned roles.
+- Institution-domain-aware onboarding with Immediate self-registration to prevent unauthorised self-assigned roles.
 - One operational view across approval movement, EVC, undertakings and expiring documents.
 - Application timeline that records who acted, what changed, when it happened and any return reason.
 - Private document storage separated from application metadata.

@@ -218,9 +218,9 @@ app.post('/api/register', (req, res) => {
  if(!['Central','North','South','West','East'].includes(reg))return res.status(400).json({error:'Select your AICTE Region.'});
  if(role==='institution'&&(!inst||inst.length>160||!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(domain)||email.split('@')[1]!==domain))return res.status(400).json({error:'Institution email domain must exactly match the institution website domain entered.'});
  if(DB.users.some(x=>x.email===email))return res.status(409).json({error:'This email is already registered.'});
- DB.users.push({id:crypto.randomUUID(),email,name,role,reg,inst:role==='institution'?inst:null,emailDomain:role==='institution'?domain:null,pw:hashPw(password),status:'pending',requestedAt:new Date().toISOString()});
- log(name,'REGISTRATION REQUESTED',email+' requested '+role+' access; pending Admin verification');save();
- res.status(202).json({ok:true,pendingApproval:true,message:'Registration submitted. An AICTE Admin must verify and approve your access before you can sign in.'});
+ DB.users.push({id:crypto.randomUUID(),email,name,role,reg,inst:role==='institution'?inst:null,emailDomain:role==='institution'?domain:null,pw:hashPw(password),status:'active',registeredAt:new Date().toISOString()});
+ log(name,'ACCOUNT SELF-REGISTERED',email+' created '+role+' account');save();
+ res.status(201).json({ok:true,active:true,message:'Account created successfully. You can sign in now. Access is limited to your selected role, region and institution.'});
 });
 
 app.post('/api/login', (req, res) => {

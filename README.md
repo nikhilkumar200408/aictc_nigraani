@@ -22,10 +22,10 @@ Local demo accounts (development only; password `Aicte@2026` unless `DEMO_PASSWO
 ## Registration and account governance
 - Institution Heads and Regional Officers can request an account from the public registration tab.
 - Institution Head email domain must match the declared institution website domain.
-- All public requests remain pending until an existing Admin approves or rejects them.
+- Regional Officer and Institution Head self-registration is immediately active for evaluator access; no Admin approval is required.
 - Admin self-registration is intentionally disabled. Admin accounts are created by an existing Admin or a secure bootstrap configuration.
 - Domain matching is a consistency check only; it does not prove domain ownership. Admin review remains mandatory.
-- Pending and rejected accounts cannot sign in or access institutional data.
+- Access remains role-, Region- and institution-scoped. Admin self-registration is disabled. Domain matching is a consistency check, not proof of domain ownership.
 
 ## Prototype capabilities
 - Role-based dashboards with server-side Region/Institution data scoping.
