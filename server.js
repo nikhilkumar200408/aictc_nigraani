@@ -87,6 +87,7 @@ async function loadRemote(){
   try{await save();}
   catch(err){
    if(err.status!==409)throw err;
+   pendingSave=null;
    const latest=await(await sbRequest(url)).json();
    if(!latest.length)throw err;
    DB=latest[0].data;DB_VERSION=Number(latest[0].version);
