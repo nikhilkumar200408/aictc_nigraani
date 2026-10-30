@@ -47,7 +47,7 @@ function seedData() {
   };
 }
 function seedUsers() {
-  const U = (email, name, role, reg, inst, password) => ({ id: crypto.randomUUID(), email, name, role, reg, inst, pw: hashPw(password) });
+  const U = (email, name, role, reg, inst, password) => ({ id: crypto.randomUUID(), email, name, role, reg, inst, pw: hashPw(password), status:'active' });
   if (PROD) {
     const email = String(process.env.BOOTSTRAP_ADMIN_EMAIL || '').trim().toLowerCase();
     const password = process.env.BOOTSTRAP_ADMIN_PASSWORD || '';
@@ -151,7 +151,7 @@ function sweep() {
 /* ---------- access control ---------- */
 const canSee = (u, x) => u.role === 'bureau' || (u.role === 'regional' ? x.reg === u.reg : x.inst === u.inst);
 const view = u => ({
-  user: { name: u.name, role: u.role, reg: u.reg, inst: u.inst, email: u.email }, users: u.role === 'bureau' ? DB.users.map(x => ({ name: x.name, email: x.email, role: x.role, reg: x.reg, inst: x.inst })) : [], off: DB.off,
+  user: { name: u.name, role: u.role, reg: u.reg, inst: u.inst, email: u.email }, users: u.role === 'bureau' ? DB.users.map(x => ({ id:x.id, name:x.name, email:x.email, role:x.role, reg:x.reg, inst:x.inst, emailDomain:x.emailDomain||null, status:x.status||'active' })) : [], off: DB.off,
   apps: DB.apps.filter(x => canSee(u, x)), uts: DB.uts.filter(x => canSee(u, x)), docs: DB.docs.filter(x => canSee(u, x)),
   audit: u.role === 'bureau' ? DB.audit.slice(-200) : [], chainOk: u.role === 'bureau' ? L.verifyChain(DB.audit) : true
 });
@@ -202,6 +202,18 @@ app.get('/api/session', (req, res) => {
   res.json(user ? { authenticated: true, state: view(user) } : { authenticated: false });
 });
 
+app.post('/api/register', (req, res) => {
+ const b=req.body||{},email=String(b.email||'').trim().toLowerCase(),name=String(b.name||'').trim(),role=String(b.role||''),reg=String(b.reg||'').trim(),inst=String(b.inst||'').trim(),password=b.password;
+ const domain=String(b.domain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/$/,'');
+ if(!/^\S+@\S+\.\S+$/.test(email)||name.length<2||name.length>80||!['regional','institution'].includes(role)||typeof password!=='string'||password.length<12)return res.status(400).json({error:'Enter valid details. Password must be at least 12 characters. Admin accounts can only be created by an existing Admin.'});
+ if(!['Central','North','South','West','East'].includes(reg))return res.status(400).json({error:'Select your AICTE Region.'});
+ if(role==='institution'&&(!inst||inst.length>160||!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(domain)||email.split('@')[1]!==domain))return res.status(400).json({error:'Institution email domain must exactly match the institution website domain entered.'});
+ if(DB.users.some(x=>x.email===email))return res.status(409).json({error:'This email is already registered.'});
+ DB.users.push({id:crypto.randomUUID(),email,name,role,reg,inst:role==='institution'?inst:null,emailDomain:role==='institution'?domain:null,pw:hashPw(password),status:'pending',requestedAt:new Date().toISOString()});
+ log(name,'REGISTRATION REQUESTED',email+' requested '+role+' access; pending Admin verification');save();
+ res.status(202).json({ok:true,pendingApproval:true,message:'Registration submitted. An AICTE Admin must verify and approve your access before you can sign in.'});
+});
+
 app.post('/api/login', (req, res) => {
   const ip = req.ip, t = tries.get(ip) || { n: 0, at: Date.now() };
   if (Date.now() - t.at > 9e5) { t.n = 0; t.at = Date.now(); }
@@ -209,6 +221,8 @@ app.post('/api/login', (req, res) => {
   const { email, password, role } = req.body || {};
   const u = DB.users.find(x => x.email === String(email || '').trim().toLowerCase());
   if (!u || (role && u.role !== role) || typeof password !== 'string' || !checkPw(password, u.pw)) { t.n++; tries.set(ip, t); return res.status(401).json({ error: 'Email, password or selected role is incorrect' }); }
+  if(u.status==='pending')return res.status(403).json({error:'Your registration is awaiting Admin approval.'});
+  if(u.status==='rejected')return res.status(403).json({error:'This registration was not approved. Contact the AICTE Admin.'});
   tries.delete(ip); setTok(res, sign({ sub: u.id, exp: Math.floor(Date.now() / 1000) + 8 * 3600 }), 8 * 3600);
   log(u.name, 'LOGIN', u.email); save(); res.json(view(u));
 });
@@ -381,6 +395,14 @@ app.post('/api/tick', auth, bureau, (req, res) => {
 app.post('/api/reset', auth, bureau, (req, res) => {
   Object.assign(DB, seedData()); log(req.user.name, 'PLATFORM DATA RESTORED', 'Configured initial records restored'); sweep(); save(); res.json(view(req.user));
 });
+app.post('/api/users/:id/approve',auth,bureau,(req,res)=>{
+ const u=DB.users.find(x=>x.id===req.params.id);if(!u)return res.status(404).json({error:'Registration not found'});
+ if(u.status!=='pending')return res.status(409).json({error:'This account is no longer pending'});
+ u.status=req.body?.decision==='reject'?'rejected':'active';u.reviewedAt=new Date().toISOString();u.reviewedBy=req.user.name;
+ log(req.user.name,u.status==='active'?'REGISTRATION APPROVED':'REGISTRATION REJECTED',u.email+' ('+u.role+')');
+ save();res.json({ok:true,status:u.status});
+});
+
 app.post('/api/users', auth, bureau, (req, res) => {
   const { email, name, role, reg, inst, password } = req.body || {}, e = String(email || '').trim().toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(e) || !name || !['bureau', 'regional', 'institution'].includes(role) || String(password || '').length < 8) return res.status(400).json({ error: 'email, name, role and password (min 8 chars) required' });
