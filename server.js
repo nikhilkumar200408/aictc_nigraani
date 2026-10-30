@@ -356,6 +356,36 @@ app.get('/api/applications/:id/documents/:documentId', auth, async (req, res, ne
   fs.createReadStream(target).on('error', next).pipe(res);
 });
 
+app.post('/api/compliance/:kind/:id/evidence',auth,(req,res,next)=>{
+ const list=req.params.kind==='undertaking'?DB.uts:req.params.kind==='lease'?DB.docs:null;
+ if(!list)return res.status(404).json({error:'Unknown compliance record'});
+ const item=list.find(x=>x.id===req.params.id);
+ if(!item||!canSee(req.user,item))return res.status(404).json({error:'Compliance record not found'});
+ if(req.user.role!=='institution')return res.status(403).json({error:'Only the institution can submit compliance evidence'});
+ if(req.params.kind==='undertaking'&&item.st!=='Pending')return res.status(409).json({error:'Undertaking is not awaiting evidence'});
+ if(req.params.kind==='lease'&&item.st!=='Valid')return res.status(409).json({error:'Document renewal is not awaiting submission'});
+ express.raw({type:()=>true,limit:MAX_UPLOAD_BYTES})(req,res,async err=>{
+  if(err)return next(err);
+  let name=String(req.headers['x-file-name']||'');try{name=decodeURIComponent(name)}catch{return res.status(400).json({error:'Invalid file name'})}
+  name=path.basename(name.replace(/\\/g,'/')).replace(/[\\r\\n"]/g,'').trim();
+  const mime=String(req.headers['content-type']||'').split(';')[0].toLowerCase(),buf=req.body;
+  if(!name||!Buffer.isBuffer(buf)||!buf.length)return res.status(400).json({error:'Select a file'});
+  if(!fileTypeAllowed(name,mime,buf))return res.status(415).json({error:'Unsupported file type or invalid file signature'});
+  const evidence={fileName:name,storagePath:'compliance/'+req.params.kind+'/'+item.id+'/'+crypto.randomUUID(),mimeType:mime,size:buf.length,uploadedBy:req.user.name,uploadedAt:new Date().toISOString(),checksum:crypto.createHash('sha256').update(buf).digest('hex')};
+  try{if(REMOTE)await sbRequest(SUPABASE_URL+'/storage/v1/object/'+encodeURIComponent(SUPABASE_BUCKET)+'/'+sbPath(evidence.storagePath),{method:'POST',headers:{'Content-Type':mime,'x-upsert':'false'},body:buf});else{const target=path.join(UPLOAD_DIR,evidence.storagePath);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,buf,{flag:'wx',mode:0o600})}}catch(e){return next(e)}
+  item.evidence=evidence;item.st=req.params.kind==='undertaking'?'Submitted':'Renewal submitted';
+  log(req.user.name,req.params.kind==='undertaking'?'UNDERTAKING EVIDENCE UPLOADED':'DOCUMENT RENEWAL UPLOADED',item.id+': '+name);
+  save();res.status(201).json({ok:true,evidence,status:item.st});
+ });
+});
+app.get('/api/compliance/:kind/:id/evidence',auth,async(req,res,next)=>{
+ const list=req.params.kind==='undertaking'?DB.uts:req.params.kind==='lease'?DB.docs:null;
+ const item=list&&list.find(x=>x.id===req.params.id),evidence=item?.evidence;
+ if(!item||!evidence||!canSee(req.user,item))return res.status(404).json({error:'Evidence not found'});
+ res.set({'Content-Type':evidence.mimeType,'Content-Length':String(evidence.size),'Content-Disposition':'inline; filename="'+evidence.fileName.replace(/["\\]/g,'_')+'"'});
+ try{if(REMOTE){const file=await sbRequest(SUPABASE_URL+'/storage/v1/object/'+encodeURIComponent(SUPABASE_BUCKET)+'/'+sbPath(evidence.storagePath));return res.send(Buffer.from(await file.arrayBuffer()))}fs.createReadStream(path.join(UPLOAD_DIR,evidence.storagePath)).on('error',next).pipe(res)}catch(e){next(e)}
+});
+
 const KINDS = { adv: ['apps', 'off'], ret: ['apps', 'off'], sch: ['apps', 'off'], res: ['apps', 'inst'], usub: ['uts', 'inst'], uver: ['uts', 'off'], dsub: ['docs', 'inst'], dver: ['docs', 'off'] };
 app.post('/api/act', auth, (req, res) => {
   const { k, id, reason, days } = req.body || {}, u = req.user, km = KINDS[k], bad = (c, m) => res.status(c).json({ error: m });
@@ -380,9 +410,9 @@ app.post('/api/act', auth, (req, res) => {
     if (o.done || o.ret || stage !== 'EVC') return bad(409, 'Application is not in the EVC stage');
     o.sched = DB.off + d; log(u.name, 'EVC SCHEDULED', `${id} on ${L.dt(Date.parse('2026-10-30T00:00:00'), o.sched)}`);
   } else if (k === 'usub') { if (o.st !== 'Pending') return bad(409, 'Already submitted'); o.st = 'Submitted'; log(u.name, 'UNDERTAKING EVIDENCE SUBMITTED', `${id}: ${o.cond}`); }
-  else if (k === 'uver') { if (o.st !== 'Submitted') return bad(409, 'No evidence to verify'); o.st = 'Verified'; log(u.name, 'UNDERTAKING VERIFIED', `${id}: ${o.cond}`); }
+  else if (k === 'uver') { if (o.st !== 'Submitted'||!o.evidence) return bad(409, 'No uploaded evidence to verify'); o.st = 'Verified'; o.verifiedBy=u.name;o.verifiedAt=new Date().toISOString();log(u.name, 'UNDERTAKING VERIFIED', `${id}: ${o.cond}`); }
   else if (k === 'dsub') { if (o.st !== 'Valid') return bad(409, 'Renewal already submitted'); o.st = 'Renewal submitted'; log(u.name, 'RENEWAL SUBMITTED', `${id}: ${o.name}`); }
-  else if (k === 'dver') { if (o.st !== 'Renewal submitted') return bad(409, 'No renewal to verify'); o.st = 'Valid'; o.exp = Math.max(o.exp, DB.off) + 365; log(u.name, 'RENEWAL VERIFIED', `${id}: valid for another year`); }
+  else if (k === 'dver') { if (o.st !== 'Renewal submitted'||!o.evidence) return bad(409, 'No uploaded renewal to verify'); o.st = 'Valid'; o.exp = Math.max(o.exp, DB.off) + 365;o.verifiedBy=u.name;o.verifiedAt=new Date().toISOString();o.evidence=null;log(u.name, 'RENEWAL VERIFIED', `${id}: valid for another year`); }
   if (km[0] === 'apps') addAppHistory(o, u, ({ adv: 'Stage completed', ret: 'Returned for clarification', res: 'Resubmitted', sch: 'EVC scheduled' })[k] || k, reason || '', previousStatus, appStatus(o));
   sweep(); save(); res.json(view(u));
 });

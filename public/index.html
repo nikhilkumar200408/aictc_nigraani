@@ -142,7 +142,9 @@ async function reviewRegistration(id,decision){if(!confirm(decision==='approve'?
 async function createUser(ev){ev.preventDefault();const form=ev.currentTarget,data=Object.fromEntries(new FormData(form).entries());try{await api('users',data);load(await api('state'));go();alert('Account created successfully. Share the credentials securely.')}catch(err){alert(err.message)}return false}
 async function logout(){await api('logout',{}).catch(()=>{});U=null;showLogin()}
 async function run(p,b){try{load(await api(p,b));go()}catch(x){alert(x.message)}}
-function act(k,id){const b={k,id};
+function chooseComplianceEvidence(k,id){const input=document.createElement('input');input.type='file';input.accept='.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx';input.onchange=()=>{const file=input.files&&input.files[0];if(file)uploadComplianceEvidence(k,id,file)};input.click()}
+async function uploadComplianceEvidence(k,id,file){const kind=k==='usub'?'undertaking':'lease';try{const response=await fetch('/api/compliance/'+kind+'/'+encodeURIComponent(id)+'/evidence',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type||mimeFor(file.name),'X-File-Name':encodeURIComponent(file.name)},body:file});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Evidence upload failed');load(await api('state'));go()}catch(err){alert(err.message)}}
+function act(k,id){if(k==='usub'||k==='dsub'){chooseComplianceEvidence(k,id);return}const b={k,id};
 if(k==='adv'&&!confirm('Confirm stage completion as authorised official? Decision remains with the competent authority.'))return;
 if(k==='ret'){const r=prompt('Reason for return (mandatory):');if(!r||!r.trim())return;b.reason=r.trim()}
 if(k==='sch'){const d=prompt('Schedule EVC after how many days from today?','7');if(d===null||isNaN(+d))return;b.days=+d}
