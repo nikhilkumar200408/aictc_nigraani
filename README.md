@@ -35,7 +35,7 @@ These are embedded images (not text-only links). If an image does not load in yo
 [Open full-size escalation and alerts image](./docs/screenshots/alerts-escalation.svg)
 
 ### Sign-in and registration
-<img src="./docs/screenshots/sign-in-registration.svg" alt="AICTE Nigrani sign-in and registration preview" width="100%" />
+<img src="https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/sign-in-registration.svg?v=94a6c73" alt="AICTE Nigrani sign-in and registration preview" width="100%" />
 
 [Open full-size sign-in and registration image](./docs/screenshots/sign-in-registration.svg)
 
