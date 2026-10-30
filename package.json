@@ -1,1 +1,15 @@
-{"name":"aicte-nigrani","version":"1.0.0","description":"AICTE approval workflow & compliance monitoring platform","main":"server.js","scripts":{"start":"node server.js"},"engines":{"node":">=18"},"dependencies":{"express":"^4.19.2"}}
+{
+  "name": "aicte-nigrani",
+  "version": "1.0.0",
+  "description": "AICTE approval workflow & compliance monitoring platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

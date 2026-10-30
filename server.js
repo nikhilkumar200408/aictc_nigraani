@@ -379,4 +379,5 @@ app.post('/api/password', auth, (req, res) => {
 app.get('/applications/:id', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.use('/api', (_, res) => res.status(404).json({ error: 'Not found' }));
 app.use((err, _req, res, _next) => { console.error(err.message); res.status(err.status || 400).json({ error: err.status === 413 ? `Maximum file size is ${MAX_UPLOAD_LABEL}` : 'Bad request' }); });
-if(require.main===module)app.listen(PORT,()=>console.log(`AICTE Nigrani running on http://localhost:${PORT}`));\nmodule.exports=app;
+if(require.main===module)app.listen(PORT,()=>console.log(`AICTE Nigrani running on http://localhost:${PORT}`));
+module.exports=app;
