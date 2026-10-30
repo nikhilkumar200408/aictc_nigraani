@@ -26,7 +26,7 @@ The screenshots below are stored in this repository and loaded from GitHub's raw
 [![Application detail preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/application-detail.svg)](docs/screenshots/application-detail.svg)
 
 ### Escalation and alerts
-[![Escalation and alerts preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/alerts-escalation.svg)](docs/screenshots/alerts-escalation.svg)
+[![Escalation and alerts preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/alerts-escalation.svg?v=f7892e8)](docs/screenshots/alerts-escalation.svg)
 
 ### Sign-in and registration
 [![Sign-in and registration preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/sign-in-registration.svg)](docs/screenshots/sign-in-registration.svg)
