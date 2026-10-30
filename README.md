@@ -17,13 +17,21 @@ AICTE approval work includes multiple application pathways and processing stages
 
 ## Product preview
 
-| Role-based workspace | Application case file |
-|---|---|
-| ![Dashboard preview](docs/screenshots/dashboard.svg) | ![Application detail preview](docs/screenshots/application-detail.svg) |
-| **Escalation and alerts** | **Sign-in and registration** |
-| ![Alerts preview](docs/screenshots/alerts-escalation.svg) | ![Sign-in preview](docs/screenshots/sign-in-registration.svg) |
+The screenshots below are stored in this repository and loaded from GitHub's raw asset host for reliable rendering in the README.
 
-[Open the live prototype](https://aictc-nigraani.vercel.app) · [Read the evaluator guide](docs/EVALUATOR_DEMO.md)
+### Role-based dashboard
+[![Dashboard preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/dashboard.svg)](docs/screenshots/dashboard.svg)
+
+### Application case file
+[![Application detail preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/application-detail.svg)](docs/screenshots/application-detail.svg)
+
+### Escalation and alerts
+[![Escalation and alerts preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/alerts-escalation.svg)](docs/screenshots/alerts-escalation.svg)
+
+### Sign-in and registration
+[![Sign-in and registration preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/sign-in-registration.svg)](docs/screenshots/sign-in-registration.svg)
+
+[Open the live prototype](https://aicta-nigraani.vercel.app) · [Read the evaluator guide](docs/EVALUATOR_DEMO.md)
 
 ## What makes the solution distinctive
 
