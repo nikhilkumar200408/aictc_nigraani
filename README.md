@@ -1,48 +1,61 @@
-# AICTE Nigrani – Approval & Compliance Monitor
+# AICTE Nigrani — Approval & Compliance Monitor
 
-Node.js + Express backend (JSON-file metadata storage) with a white-theme web UI. Application records have dedicated detail URLs, and uploaded files are stored separately under `DATA_DIR/uploads` rather than embedded in JSON.
+Responsive Node.js + Express prototype for AICTE-style application workflow tracking, EVC scheduling, institutional undertakings, document validity, alerts and auditability.
+
+## Live prototype
+- Production: https://aictc-nigraani.vercel.app
+- Health check: https://aictc-nigraani.vercel.app/healthz
 
 ## Run locally
+```bash
+npm ci
+npm start
 ```
-npm install
-npm start          # http://localhost:3000
-```
-Initial test accounts (password `Aicte@2026`, or `DEMO_PASSWORD`):
+
+Local demo accounts (development only; password `Aicte@2026` unless `DEMO_PASSWORD` is set):
 | Role | Email |
 |---|---|
-| Bureau (all regions, audit, workflow date controls) | bureau@aicte.demo |
-| Regional officer | central@ / north@ / south@ / west@ / east@aicte.demo |
-| Institution | sriram@inst.demo, narmada@inst.demo |
+| Admin/Bureau | bureau@aicte.demo |
+| Regional Officer | central@ / north@ / south@ / west@ / east@aicte.demo |
+| Institution Head | sriram@inst.demo, narmada@inst.demo |
 
-## Public registration and access control
-- Institution Heads can request access using an institutional email address whose domain matches the institution website domain they enter.
-- Regional Officers can request access and select their AICTE region.
-- All public registrations remain pending until an existing Admin approves or rejects them. Admin self-registration is disabled; Admin accounts can only be provisioned by an existing Admin or secure bootstrap configuration.
-- Pending/rejected accounts cannot sign in or access application data. Domain matching is a registration check, not a substitute for formal institutional verification.
+## Registration and account governance
+- Institution Heads and Regional Officers can request an account from the public registration tab.
+- Institution Head email domain must match the declared institution website domain.
+- All public requests remain pending until an existing Admin approves or rejects them.
+- Admin self-registration is intentionally disabled. Admin accounts are created by an existing Admin or a secure bootstrap configuration.
+- Domain matching is a consistency check only; it does not prove domain ownership. Admin review remains mandatory.
+- Pending and rejected accounts cannot sign in or access institutional data.
 
-## Deploy
-- **Render / Railway / Fly**: connect repo, build `npm install`, start `npm start`. Set env vars from `.env.example`; mount a persistent disk and point `DATA_DIR` to it.
-- **Docker**: `docker build -t nigrani . && docker run -p 3000:3000 -v nigrani:/data -e JWT_SECRET=... -e DEMO_PASSWORD=... -e DEMO_HINT=0 nigrani`
+## Prototype capabilities
+- Role-based dashboards with server-side Region/Institution data scoping.
+- APH-style pathways: Only Scrutiny, Scrutiny + EVC, Only EVC, Only SAC/SHC, Scrutiny + SAC/SHC, EVC + SAC/SHC and Scrutiny + EVC + SAC/SHC.
+- Stage progression, reasoned returns, application timelines and SLA ageing.
+- EVC queue and scheduling; time-bound undertaking tracking; lease/document validity and renewal states.
+- Upcoming/overdue alerts, escalation levels, region-wise summaries and CSV alert export.
+- Drag-and-drop application documents, file type/signature validation, private Supabase Storage and authorised preview/download.
+- Admin account approval, hash-chained audit events and human-authority safeguards.
 
-## Applications and documents
-Institution users can create, edit, submit, and open applications at `/applications/:id`; Bureau officers can open and edit application records, and refreshing a detail URL retains the page. Application history is recorded with each workflow action. Application documents can be selected or dragged into the upload area, then previewed inline (PDF/images) or downloaded. File contents are stored on disk, while metadata is stored with the application record.
+## Architecture and deployment
+- Front end: responsive HTML/CSS/JavaScript.
+- API: Node.js 22 + Express, deployed on Vercel serverless functions.
+- Persistent state: Supabase Postgres JSONB state row with optimistic version checks.
+- Documents: private Supabase Storage bucket accessed through the `nigrani-proxy` Edge Function.
+- Vercel environment variables: `SUPABASE_URL`, `APP_BACKEND_URL`, `APP_BACKEND_SECRET`, `SUPABASE_BUCKET`, `JWT_SECRET`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD`, `BOOTSTRAP_ADMIN_NAME`, `NODE_ENV=production`, `DEMO_HINT=0`.
 
-Uploads accept PDF, JPG/JPEG, PNG, DOC/DOCX, XLS/XLSX. The default per-file limit is 15 MiB and can be changed with `MAX_UPLOAD_BYTES` (integer from 1048576 to 104857600). Keep `DATA_DIR` on persistent storage; back up both `db.json` and the `uploads/` directory.
+## Tests
+```bash
+npm test
+node --check server.js
+```
+GitHub Actions runs the smoke tests on pushes and pull requests to `main`.
 
-## Security built in
-scrypt password hashing · HS256 JWT in HttpOnly + SameSite=Strict (+Secure in production) cookie · login rate limit · server-side role & region/institution scoping on every endpoint · input validation · CSP and security headers · hash-chained backend audit log.
+## SIH documentation
+- [SIH submission and feature mapping](SIH_SUBMISSION.md)
+- [Evaluator demo guide](docs/EVALUATOR_DEMO.md)
 
-## API (all JSON, cookie auth)
-`POST /api/login` · `POST /api/logout` · `GET /api/state` · `POST /api/applications` · `GET/PATCH /api/applications/:id` · `POST /api/applications/:id/documents` (raw file body; `X-File-Name` and `X-Document-Category` headers) · `PATCH /api/applications/:id/documents/:documentId {status,reason?}` (authorised official review) · `GET /api/applications/:id/documents/:documentId` · `POST /api/act {k,id,reason?,days?}` · `POST /api/password {old,next}`
-Bureau only: `POST /api/tick {n}` (date simulator) · `POST /api/reset` · `POST /api/users {email,name,role,reg,inst,password}`
+## Production limitations and safeguards
+This is an evaluation prototype, not an authorised AICTE production system. Seed records and the workflow date simulator are illustrative. SLA values and workflow combinations must be validated against the currently applicable APH and approved administrative procedures. Registration domain matching is not email/domain ownership verification. Outbound email/SMS notification providers and authorised AICTE system integrations are not configured. Some undertaking and renewal actions are currently represented by status transitions; production use must require evidence files and formal verification. Automated workflow actions do not replace statutory scrutiny, inspections, verification or decisions of competent authorities. Production onboarding must include formal identity/institution verification, approved APH configuration, retention policies, notification gateways, monitoring and a security review.
 
-## SIH prototype coverage
-- Role-based dashboards and server-enforced Region/Institution scoping.
-- APH-style workflow pathways: Only Scrutiny, Scrutiny + EVC, Only EVC, Only SAC/SHC, Scrutiny + SAC/SHC, EVC + SAC/SHC and Scrutiny + EVC + SAC/SHC; stage progression and reasoned returns.
-- Stage ageing, EVC queue/scheduling, undertakings, lease/document validity, upcoming/overdue alerts and escalation levels.
-- Document upload with drag-and-drop, private object storage, official verification, application history and hash-chained audit log.
-- CSV alert export and Admin-managed account approval.
-- Human authority is preserved: workflow completion does not represent statutory approval.
-
-## Before production
-Change all initial account passwords/`JWT_SECRET`, set `DEMO_HINT=0`, replace the JSON file with Supabase/Postgres and local file storage with a private object store before production; configure real notification channels (email/SMS) and AICTE systems. Supabase Auth, Netlify Functions, email verification, and the production storage/database policies are not configured by this Express deployment. Alerts/escalations support, but never replace, decisions of the competent authority.
+## Security controls
+scrypt password hashing · HttpOnly/SameSite cookies · HS256 sessions · login throttling · role/region/institution checks on API routes · file signature validation · private document storage · CSP/security headers · hash-chained audit log.
