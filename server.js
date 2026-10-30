@@ -94,6 +94,14 @@ async function loadRemote(){
    if(DB.users?.some(u=>u.email==='bureau@aicte.demo'))throw err;
   }
  }
+
+ const resetEmail=String(process.env.BOOTSTRAP_ADMIN_EMAIL||'').trim().toLowerCase();
+ const resetPassword=process.env.BOOTSTRAP_ADMIN_PASSWORD||'';
+ if(PROD&&process.env.BOOTSTRAP_ADMIN_RESET_ONCE==='1'&&resetEmail&&resetPassword.length>=12&&DB.adminPasswordResetFor!==resetEmail){
+  const admin=DB.users.find(u=>u.email===resetEmail&&u.role==='bureau');
+  if(admin){admin.pw=hashPw(resetPassword);DB.adminPasswordResetFor=resetEmail;log('System','ADMIN PASSWORD RESET','One-time bootstrap password reset completed');await save();}
+ }
+
 }
 function save(){
  if(!REMOTE){const t=FILE+'.tmp';fs.mkdirSync(DIR,{recursive:true});fs.writeFileSync(t,JSON.stringify(DB));fs.renameSync(t,FILE);return;}
