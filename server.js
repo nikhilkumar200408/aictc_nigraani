@@ -2,7 +2,7 @@
 const express = require('express'), crypto = require('crypto'), fs = require('fs'), path = require('path');
 const L = require('./public/logic.js');
 const PORT = process.env.PORT || 3000, PROD = process.env.NODE_ENV === 'production';
-const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\\/+$/, ''), APP_BACKEND_URL = String(process.env.APP_BACKEND_URL || '').replace(/\\/+$/, ''), APP_BACKEND_SECRET = process.env.APP_BACKEND_SECRET || '';
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/+$/, ''), APP_BACKEND_URL = String(process.env.APP_BACKEND_URL || '').replace(/\/+$/, ''), APP_BACKEND_SECRET = process.env.APP_BACKEND_SECRET || '';
 const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'application-documents';
 const REMOTE = Boolean(SUPABASE_URL && APP_BACKEND_URL && APP_BACKEND_SECRET);
 let DB_VERSION = 0, pendingSave = null;
@@ -154,7 +154,7 @@ app.use('/api',(req,res,next)=>{
  let released=false;const unlock=()=>{if(!released){released=true;release();}};
  res.once('finish',unlock);res.once('close',unlock);
  previous.then(async()=>{
-  try{await loadRemote();const send=res.json.bind(res);res.json=body=>{const pending=pendingSave;pendingSave=null;if(!pending)return send(body);pending.then(()=>send(body)).catch(next);return res;};next();}
+  try{if(!REMOTE){next();return;}await loadRemote();const send=res.json.bind(res);res.json=body=>{const pending=pendingSave;pendingSave=null;if(!pending)return send(body);pending.then(()=>send(body)).catch(next);return res;};next();}
   catch(err){unlock();next(err);}
  }).catch(err=>{unlock();next(err);});
 });
