@@ -17,7 +17,7 @@ const DIR = process.env.DATA_DIR || path.join(__dirname, 'data'), FILE = path.jo
 const UPLOAD_DIR = path.join(DIR, 'uploads'), MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_BYTES || 15 * 1024 * 1024);
 if (!Number.isSafeInteger(MAX_UPLOAD_BYTES) || MAX_UPLOAD_BYTES < 1024 * 1024 || MAX_UPLOAD_BYTES > 100 * 1024 * 1024) throw new Error('MAX_UPLOAD_BYTES must be between 1048576 and 104857600');
 const MAX_UPLOAD_LABEL = `${(MAX_UPLOAD_BYTES / 1024 / 1024).toFixed(2).replace(/\.?0+$/, '')} MB`;
-const DEMO_PW = process.env.DEMO_PASSWORD || 'Aicte@2026';
+const DEMO_PW = process.env.DEMO_PASSWORD || (PROD ? '' : 'Aicte@2026');
 const SHOW_HINT = process.env.DEMO_HINT ? process.env.DEMO_HINT === '1' : !PROD;
 
 /* ---------- password + token helpers (node crypto only) ---------- */
@@ -47,11 +47,17 @@ function seedData() {
   };
 }
 function seedUsers() {
-  const U = (email, name, role, reg, inst) => ({ id: crypto.randomUUID(), email, name, role, reg, inst, pw: hashPw(DEMO_PW) });
-  return [U('bureau@aicte.demo', 'Bureau Officer', 'bureau'),
-    ...['Central', 'North', 'South', 'West', 'East'].map(r => U(r.toLowerCase() + '@aicte.demo', r + ' Regional Officer', 'regional', r)),
-    U('sriram@inst.demo', 'Shri Ram Institute (Principal)', 'institution', 'Central', MY),
-    U('narmada@inst.demo', 'Narmada School (Registrar)', 'institution', 'West', 'Narmada School of Management')];
+  const U = (email, name, role, reg, inst, password) => ({ id: crypto.randomUUID(), email, name, role, reg, inst, pw: hashPw(password) });
+  if (PROD) {
+    const email = String(process.env.BOOTSTRAP_ADMIN_EMAIL || '').trim().toLowerCase();
+    const password = process.env.BOOTSTRAP_ADMIN_PASSWORD || '';
+    if (!email || !/^\S+@\S+\.\S+$/.test(email) || password.length < 12) return [];
+    return [U(email, process.env.BOOTSTRAP_ADMIN_NAME || 'AICTE Nigrani Administrator', 'bureau', null, null, password)];
+  }
+  return [U('bureau@aicte.demo','Bureau Officer','bureau',null,null,DEMO_PW),
+    ...['Central','North','South','West','East'].map(r=>U(r.toLowerCase()+'@aicte.demo',r+' Regional Officer','regional',r,null,DEMO_PW)),
+    U('sriram@inst.demo','Shri Ram Institute (Principal)','institution','Central',MY,DEMO_PW),
+    U('narmada@inst.demo','Narmada School (Registrar)','institution','West','Narmada School of Management',DEMO_PW)];
 }
 let DB;
 function loadLocal() {
@@ -73,7 +79,7 @@ async function loadRemote(){
  }
  if(!rows.length)throw Object.assign(new Error('Could not initialise application data'),{status:503});
  DB=rows[0].data;DB_VERSION=Number(rows[0].version);
- const before=JSON.stringify(DB.sent||{});sweep();if(JSON.stringify(DB.sent||{})!==before)await save();
+
 }
 function save(){
  if(!REMOTE){const t=FILE+'.tmp';fs.mkdirSync(DIR,{recursive:true});fs.writeFileSync(t,JSON.stringify(DB));fs.renameSync(t,FILE);return;}
