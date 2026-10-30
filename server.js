@@ -79,7 +79,20 @@ async function loadRemote(){
  }
  if(!rows.length)throw Object.assign(new Error('Could not initialise application data'),{status:503});
  DB=rows[0].data;DB_VERSION=Number(rows[0].version);
-
+ if(PROD && DB.users?.some(u=>u.email==='bureau@aicte.demo')){
+  const secureUsers=seedUsers();
+  if(!secureUsers.length)throw Object.assign(new Error('Bootstrap administrator is not configured'),{status:503});
+  DB.users=secureUsers;
+  log('System','PRODUCTION ACCOUNT MIGRATION','Removed demo accounts and installed the configured administrator');
+  try{await save();}
+  catch(err){
+   if(err.status!==409)throw err;
+   const latest=await(await sbRequest(url)).json();
+   if(!latest.length)throw err;
+   DB=latest[0].data;DB_VERSION=Number(latest[0].version);
+   if(DB.users?.some(u=>u.email==='bureau@aicte.demo'))throw err;
+  }
+ }
 }
 function save(){
  if(!REMOTE){const t=FILE+'.tmp';fs.mkdirSync(DIR,{recursive:true});fs.writeFileSync(t,JSON.stringify(DB));fs.renameSync(t,FILE);return;}
