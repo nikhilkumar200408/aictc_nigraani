@@ -1,65 +1,93 @@
-# AICTE Nigrani — SIH Prototype Submission
+# AICTE Nigrani — SIH 2026 Solution Brief
 
-## 1. Problem addressed
-AICTE approval processing spans multiple application pathways, scrutiny stages, EVC scheduling, committee processing, time-bound undertakings and validity of institutional documents. The prototype centralises these records and exposes stage ageing, ownership, alerts and an auditable history.
+**Problem Statement ID:** SIH26262  
+**Title:** Integrated AICTE Approval Workflow Automation, Compliance Monitoring and Alert Management System  
+**Theme:** Smart Automation · **Category:** Software  
+**Team:** Aayam · **Team ID:** 197726
 
-## 2. Solution overview
-AICTE Nigrani is a role-based web platform with three operational roles:
-- **Admin / Bureau:** consolidated view, account approval, audit trail, workflow actions and reporting.
-- **Regional Officer:** region-scoped applications and compliance records, stage actions, EVC scheduling and verification.
-- **Institution Head:** institution-scoped applications, supporting-document uploads, returned-case resubmission and compliance follow-up.
+## 1. Problem understanding
 
-Public users may request Institution Head or Regional Officer access. Institution registrations must use an email address matching the declared institutional website domain. Requests remain pending until an existing Admin approves them. Admin self-registration is disabled.
+AICTE approval work includes multiple application pathways and processing stages, including scrutiny, Expert Visit Committee (EVC), SAC/SHC and other combinations prescribed by the applicable Approval Process Handbook (APH). In parallel, institutions may have time-bound undertakings and prescribed documents—such as lease documents—that require submission, verification and renewal. Fragmented follow-up makes it difficult to identify stalled applications, approaching deadlines, overdue compliance and the official responsible for the next action.
 
-## 3. Feature mapping to the problem statement
-| Problem requirement | Prototype implementation |
-|---|---|
-| End-to-end application routing | Workflow pathways for Only Scrutiny, Scrutiny + EVC, Only EVC, Only SAC/SHC, Scrutiny + SAC/SHC, EVC + SAC/SHC and Scrutiny + EVC + SAC/SHC; authorised stage completion and reasoned returns |
-| Role-based dashboards | Admin, Regional Officer and Institution Head views with server-side region/institution scoping |
-| Pendency and ageing | Stage-wise SLA counters, active/overdue application queues and region-wise dashboard summaries |
-| EVC scheduling | Dedicated EVC queue, schedule/reschedule action and alerts for unscheduled EVC-stage cases |
-| Time-bound undertakings | Due-date tracking, submission and authorised verification states |
-| Lease/document validity | Validity date tracking, expiry indicators, renewal submission and verification states |
-| Alerts and escalation | Upcoming/overdue alert rules with Regional Officer, Regional Director and Bureau Head escalation levels |
-| Secure document handling | Drag-and-drop uploads, file signature/type checks, private Supabase Storage and authorised preview/download |
-| Auditability | Per-application history and hash-chained audit events; Admin can inspect audit records |
-| Reports | Alert CSV export and region/stage dashboard summaries |
-| Human oversight | Workflow actions support review; final statutory decisions remain with competent authorities |
+## 2. Proposed solution
 
-## 4. Distinctive features
-- Institution-domain-aware onboarding with Immediate self-registration to prevent unauthorised self-assigned roles.
-- One operational view across approval movement, EVC, undertakings and expiring documents.
-- Application timeline that records who acted, what changed, when it happened and any return reason.
-- Private document storage separated from application metadata.
-- Escalation visibility based on ageing rather than relying only on manual follow-up.
-- Workflow simulation controls for evaluators to demonstrate upcoming, overdue and escalated states.
+**AICTE Nigrani is a unified, role-based approval and obligation monitoring workspace.** It connects the application lifecycle with EVC, undertaking and document-validity tracking. Each case has a visible status, stage, owner/scope, timeline and next action. Configurable workflow rules support authorised officers; deadline rules surface upcoming and overdue work for follow-up.
 
-## 5. Suggested evaluator demo
-1. Open the production URL and sign in as Admin.
-2. Open Users and show pending registration approval and Admin-created account provisioning.
-3. Sign in as Institution Head; create a new application and choose a workflow pathway.
-4. Drag-and-drop supporting documents and show the application timeline.
-5. Sign in as Regional Officer; complete a stage, return a case with a reason and schedule an EVC.
-6. Open Undertakings and Documents; demonstrate submission/verification and validity monitoring.
-7. Return to Admin; show region-wise/stage-wise pendency, alerts, escalation levels, CSV export and audit chain.
-8. Use the date simulator to demonstrate approaching and overdue alerts. Explain that it is a prototype simulation, not a live regulatory clock.
+## 3. Innovation and differentiators
 
-## 6. Architecture
-- Front end: responsive HTML/CSS/JavaScript interface.
-- Application API: Node.js + Express deployed as a Vercel serverless function.
-- Persistent state: Supabase Postgres JSONB state store with version checks.
-- Document storage: private Supabase Storage bucket.
-- Security: scrypt password hashes, HttpOnly/SameSite cookies, HS256 session tokens, login throttling, role and scope checks, input validation and security headers.
+### Unified Obligation Engine
+One timeline for application stage clocks, EVC events, institutional undertakings and document validity. The goal is to replace separate follow-up sheets with a consistent record of due date, status and responsibility.
 
-## 7. Regulatory and production safeguards
-This is a prototype and workflow-support system. Its sample records, simulated clock and configurable demo pathways must not be treated as official AICTE data or authoritative APH interpretations. Before institutional production use, AICTE must approve the exact APH rules, stage SLAs, delegation matrix, document checklist, escalation hierarchy, data-retention policy and integrations. Email/SMS delivery, verified domain ownership, institutional identity proof and integration with authorised AICTE systems require approved providers and credentials. Automated workflow progression must never replace statutory scrutiny, EVC inspection, verification or competent-authority decisions.
+### Explainable AI assistance (planned extension)
+OCR/AI can propose lease/document dates and flag missing or inconsistent evidence. The interface should show the source page/field and confidence; an authorised officer confirms or corrects the extracted value. This is an explainable-assistance design direction, not a claim that a production OCR/AI service is currently integrated.
 
-## 8. Current prototype limitations
-- Registration domain matching is a consistency check; it does not prove domain ownership. Admin review is mandatory.
-- Alerts are visible in the platform; outbound email/SMS gateways are not configured in this prototype.
-- The prototype stores evidence uploads for undertakings and lease renewals and supports official verification; production should additionally enforce APH-specific document checklists and multi-step sign-off.
-- SLA values and demo pathways require validation against the currently applicable Approval Process Handbook before operational use.
-- Demo date simulation is for evaluation only.
+### Smart alert and escalation model
+The SIH concept specifies T-30 and T-7 reminders, due-date notices and overdue escalation through L1/L2. The current prototype demonstrates upcoming/overdue alert calculations, escalation labels and an evaluator date simulator. Email/SMS dispatch and a live scheduler are not configured in this deployment.
 
-## 9. Evaluation focus
-Workflow accuracy, role and data isolation, stage-wise pendency visibility, EVC scheduling, deadline alert correctness, audit completeness, document security, usability and the ability to demonstrate reduced manual follow-up.
+### Secure governance and human decision boundary
+Role-based access, private document storage, reasoned returns, application history and a hash-chained audit log support traceability. AI and automation assist administrative work; statutory scrutiny, inspection, verification and final decisions remain with competent authorities.
+
+## 4. Requirement-to-prototype mapping
+
+| SIH requirement | What the current prototype demonstrates | Status / boundary |
+|---|---|---|
+| Application intake and routing | Application creation and APH-style workflow path selection | Demonstrated with illustrative paths; validate exact APH configuration before use |
+| Stage automation | Stage completion, return with reason and resubmission | Human-authorised actions; not an autonomous statutory decision |
+| Role-based dashboards | Bureau, Regional Officer and Institution Head views | Server-side role and scope checks |
+| Pendency monitoring | Stage ageing, overdue indicators and Region summaries | Demonstrated using sample data and simulated workflow date |
+| EVC scheduling | EVC queue and scheduling action | Demonstrated; no external committee calendar integration |
+| Undertakings | Due-date records and submit/verify states | Demonstrated using sample data; production must enforce evidence and verification policy |
+| Lease/document validity | Expiry alerts and renewal/verification states | Demonstrated using sample data; live OCR date extraction is not integrated |
+| Notifications and escalation | Upcoming/overdue alert list, escalation levels and CSV export | In-app alerts demonstrated; email/SMS gateways and background scheduler not configured |
+| Auditability | Application history and hash-chained audit events | Demonstrated in prototype |
+| AI document assistance | Explainable OCR/date extraction concept | Planned extension; no deployed OCR/AI model claimed |
+| AICTE integration | Extension architecture | Planned; no live AICTE/eOffice/DigiLocker integration is claimed |
+| Human oversight | Authorised role actions and explicit decision boundary | Demonstrated design principle |
+
+## 5. User roles
+
+- **Bureau / Admin:** organisation-wide view, user administration, date simulation, reporting and audit visibility.
+- **Regional Officer:** cases and obligations scoped to the assigned AICTE Region; authorised review and scheduling actions.
+- **Institution Head:** applications and compliance items scoped to the registered institution; document upload and resubmission.
+
+Regional Officers and Institution Heads can self-register for evaluator access. Institution registration checks that the email domain matches the declared website domain; this is only a consistency check, not proof of domain ownership. Bureau/Admin self-registration is disabled.
+
+## 6. Technical architecture
+
+- Responsive browser UI: HTML, CSS and JavaScript.
+- API: Node.js 22 + Express on Vercel serverless.
+- Data: Supabase Postgres JSONB state with version-checked writes through a private backend proxy.
+- Files: private Supabase Storage bucket accessed server-side.
+- Security: scrypt password hashing, HS256 HttpOnly session cookie, login throttling, role/scope checks, upload signature validation and audit events.
+
+See [Architecture](docs/ARCHITECTURE.md) and [Security & limitations](docs/SECURITY_AND_LIMITATIONS.md).
+
+## 7. Feasibility and viability
+
+The prototype uses widely adopted web technologies and a managed database/object-storage backend. It demonstrates a phased approach: digitise workflow and obligation records first; add approved notification channels and verified identity/domain checks next; then integrate OCR-assisted extraction and authorised AICTE systems under formal governance.
+
+## 8. Expected impact and measurable evaluation
+
+The solution is intended to reduce manual chasing, expose pending work earlier, improve EVC and compliance visibility, and create a traceable record of actions. Suggested evaluation metrics:
+
+- Median time from submission to first scrutiny action.
+- Percentage of cases processed within configured stage SLA.
+- Number and age distribution of pending/overdue cases.
+- EVC scheduling lead time and overdue EVC count.
+- Percentage of undertakings/document renewals submitted before due date.
+- Alert precision/recall and escalation timeliness.
+- Completeness of application history and audit verification.
+- User task completion time and number of manual follow-ups avoided.
+
+Do not present target improvements as measured results unless a controlled pilot produces evidence.
+
+## 9. Demo and evidence
+
+- [Live prototype](https://aictc-nigraani.vercel.app)
+- [Evaluator demo guide](docs/EVALUATOR_DEMO.md)
+- [UI previews](docs/screenshots/)
+- [Feature traceability matrix](docs/FEATURE_TRACEABILITY.md)
+
+## 10. Regulatory safeguard
+
+The platform must operate only under current AICTE regulations, the applicable APH and authorised administrative procedures. Workflow rules, timelines, delegation, document requirements and escalation levels must be approved and version-controlled by the competent authority. Automated alerts, OCR and recommendations are decision-support tools only; they must never replace statutory scrutiny, verification, EVC inspection or decisions reserved for competent authorities.
