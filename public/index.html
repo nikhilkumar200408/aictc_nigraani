@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231e3a8a'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Arial,sans-serif' font-size='34' font-weight='700' fill='white'%3EN%3C/text%3E%3C/svg%3E">
+<title>AICTE Nigrani</title>
+<style>
+:root{color-scheme:light;--bg:#fff;--ink:#14213d;--mut:#64748b;--line:#e5e9f0;--pri:#1e3a8a;--acc:#ea580c;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--soft:#f6f8fc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{border-bottom:1px solid var(--line);padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:19px;margin:0;color:var(--pri)}h1 span{color:var(--acc)}small{color:var(--mut)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,button{font:inherit;border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 11px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--pri)}button.p{background:var(--pri);color:#fff;border-color:var(--pri)}button.s{padding:3px 9px;font-size:13px}
+nav{display:flex;gap:4px;padding:8px 20px;overflow-x:auto;border-bottom:1px solid var(--line)}
+nav button{border:0;border-radius:20px;white-space:nowrap}nav button.on{background:var(--pri);color:#fff}
+main{padding:20px;max-width:1200px;margin:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.k{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--soft)}.k b{font-size:26px;display:block}.k.r b{color:var(--bad)}.k.a b{color:var(--warn)}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px}.card h3{margin:0 0 10px;font-size:15px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.bd{display:inline-block;padding:1px 9px;border-radius:20px;font-size:12px;font-weight:600}
+.ok{background:#dcfce7;color:var(--ok)}.wn{background:#fef3c7;color:var(--warn)}.bad{background:#fee2e2;color:var(--bad)}.in{background:#e0e7ff;color:var(--pri)}.gr{background:#f1f5f9;color:var(--mut)}
+.bar{height:10px;border-radius:6px;background:var(--pri);min-width:3px}.row{display:flex;align-items:center;gap:10px;margin:6px 0}.row span:first-child{width:90px;font-size:13px}
+.steps{display:flex;gap:4px;margin-top:4px}.steps i{height:5px;width:26px;border-radius:3px;background:var(--line)}.steps i.d{background:var(--ok)}.steps i.c{background:var(--acc)}
+.note{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px}
+footer{padding:20px;color:var(--mut);font-size:12px;text-align:center;border-top:1px solid var(--line)}
+code{font-size:12px;color:var(--mut)}
+
+#login{max-width:380px;margin:12vh auto;padding:0 20px}#login input{width:100%;font:inherit;padding:9px 12px;margin:4px 0 12px;border:1px solid var(--line);border-radius:8px}
+#login button{width:100%;padding:10px}.err{color:var(--bad);font-size:13px;min-height:20px}[hidden]{display:none!important}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:4px}.field input,.field select,.field textarea{font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px 10px}.field textarea{min-height:80px;resize:vertical}.wide{grid-column:1/-1}
+.dropzone{border:2px dashed #94a3b8;border-radius:12px;padding:24px;text-align:center;background:var(--soft);cursor:pointer}.dropzone.drag{border-color:var(--pri);background:#eff6ff}.file-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.detailhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.timeline{border-left:2px solid var(--line);margin:8px 0 8px 7px;padding-left:16px}.event{padding:0 0 12px;position:relative}.event:before{content:"";position:absolute;left:-22px;top:7px;width:9px;height:9px;background:var(--pri);border-radius:50%}
+dialog{border:0;border-radius:12px;padding:18px;max-width:min(1000px,96vw);width:96vw;max-height:92vh}dialog::backdrop{background:#0f172a99}.previewbody{height:75vh}.previewbody iframe,.previewbody img{width:100%;height:100%;object-fit:contain;border:0}
+</style></head><body>
+<section id="login" hidden>
+<h1>AICTE <span>Nigrani</span></h1><p><small>Sign in</small></p>
+<form onsubmit="return signIn(event)"><label>Email<input id="em" type="email" autocomplete="username" required></label>
+<label>Password<input id="pw" type="password" autocomplete="current-password" required></label>
+<div class="err" id="err"></div><button class="p">Sign in</button></form><p><small id="hint"></small></p>
+</section>
+<div id="app" hidden>
+<header><div><h1>AICTE <span>Nigrani</span></h1></div>
+<div class="ctl"><span><small>Workflow date:</small> <b id="clk"></b></span>
+<span id="adm" class="ctl"><button onclick="tick(1)">+1 day</button><button onclick="tick(7)">+7 days</button><button onclick="tick(30)">+30 days</button><button onclick="reset()">Reset</button></span>
+<button onclick="chpw()">Change password</button><button onclick="logout()">Sign out</button></div></header>
+<nav id="nav"></nav><main id="m"></main>
+<footer>Alerts, escalations and workflow actions support the approval process only. Scrutiny, verification, inspections and final decisions remain with the competent AICTE authority.</footer>
+</div>
+<script src="/logic.js"></script>
+<script>
+const BASE=new Date('2026-10-30T00:00:00'),SLA=LOGIC.SLA,PATHS=LOGIC.PATHS;
+let S={tab:'Dashboard',detail:null,editing:false},U=null,queuedFiles=[];
+const dt=n=>new Date(BASE.getTime()+n*864e5).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+const vis=()=>true,isOff=()=>U.role!=='institution',alerts=()=>LOGIC.alerts(S);
+const e=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bd=(c,t)=>`<span class="bd ${c}">${e(t)}</span>`;
+const stg=a=>PATHS[a.path][a.i];
+const tbl=(hd,rows)=>`<div class="tw"><table><tr>${hd.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.join('')||`<tr><td colspan="${hd.length}"><small>Nothing to show for this role.</small></td></tr>`}</table></div>`;
+const lvb=l=>!l?'':bd(l==='Upcoming'?'wn':'bad',l);
+const steps=a=>`<div class="steps">${PATHS[a.path].map((s,i)=>`<i class="${a.done||i<a.i?'d':i===a.i?'c':''}" title="${s}"></i>`).join('')}</div>`;
+const VIEWS={
+Dashboard(){const A=alerts().filter(vis),ap=S.apps.filter(a=>vis(a)&&!a.done),od=A.filter(a=>a.left<0),regs=['Central','North','South','West','East'];
+const kp=(n,l,c)=>`<div class="k ${c||''}"><b>${n}</b>${l}</div>`,mx=Math.max(1,...Object.keys(SLA).map(s=>ap.filter(a=>stg(a)===s).length));
+return`<div class="kpis">${kp(ap.length,'Active applications')}${kp(od.length,'Overdue items','r')}${kp(A.length-od.length,'Upcoming deadlines','a')}${kp(ap.filter(a=>stg(a)==='EVC'&&!a.sched).length,'EVC awaiting schedule','a')}${kp(S.uts.filter(u=>vis(u)&&u.st!=='Verified').length,'Open undertakings')}${kp(S.docs.filter(d=>vis(d)&&d.st==='Valid'&&d.exp-S.off<=30).length,'Documents expiring ≤30d')}</div>
+<div class="g2"><div class="card"><h3>Stage-wise pendency</h3>${Object.keys(SLA).map(s=>{const n=ap.filter(a=>stg(a)===s).length;return`<div class="row"><span>${s}</span><div class="bar" style="width:${n/mx*60}%"></div><b>${n}</b></div>`}).join('')}</div>
+<div class="card"><h3>Region-wise performance</h3>${tbl(['Region','Active','Overdue'],regs.map(r=>`<tr><td>${r}</td><td>${S.apps.filter(a=>a.reg===r&&!a.done).length}</td><td>${alerts().filter(a=>a.reg===r&&a.left<0).length}</td></tr>`))}</div></div>
+<div class="card"><h3>Most urgent</h3>${tbl(['Type','Item','Level'],A.slice(0,6).map(a=>`<tr><td>${a.type}</td><td>${e(a.msg)}</td><td>${lvb(a.lv)}</td></tr>`))}</div>`},
+Applications(){return`${U.role==='institution'?'<div class="card"><button class="p" onclick="applicationForm()">Create New Application</button></div>':''}<div class="card">${tbl(['ID / Institution','Pathway','Stage','SLA','Actions'],S.apps.filter(vis).map(a=>{const s=stg(a),left=SLA[s]-(S.off-a.since);return`<tr><td><button class="s" onclick="openApplication('${e(a.id)}')"><b>${e(a.id)}</b></button><br>${e(a.inst)}<br><small>${e(a.reg)} Region</small></td><td>${e(a.path)}${steps(a)}</td><td>${a.done?bd('ok','Sent for decision'):a.ret?bd('wn','Returned'):bd('in',s)}${a.ret?`<br><small>${e(a.ret)}</small>`:''}</td><td>${a.done||a.ret?'–':left<0?bd('bad',-left+'d overdue'):bd(left<=5?'wn':'ok',left+'d left')}</td><td>${a.done?'':isOff()?(a.ret?'':`<button class="s p" onclick="act('adv','${e(a.id)}')">Complete stage</button> <button class="s" onclick="act('ret','${e(a.id)}')">Return</button>`):(a.ret?`<button class="s p" onclick="act('res','${e(a.id)}')">Resubmit</button>`:'')}</td></tr>`}))}</div>`},
+EVC(){const q=S.apps.filter(a=>vis(a)&&!a.done&&!a.ret&&stg(a)==='EVC');return`<div class="note">Applications are placed here automatically once preliminary processing is complete.</div><div class="card">${tbl(['Application','In queue','Schedule','Action'],q.map(a=>`<tr><td><b>${a.id}</b><br>${e(a.inst)}</td><td>${S.off-a.since} days</td><td>${a.sched?bd(a.sched<S.off?'ok':'in',dt(a.sched)+(a.sched<S.off?' · held':'')):bd('wn','Not scheduled')}</td><td>${isOff()?`<button class="s" onclick="act('sch','${a.id}')">${a.sched?'Reschedule':'Schedule'}</button>`:''}</td></tr>`))}</div>`},
+Undertakings(){return`<div class="card">${tbl(['ID / Institution','Condition','Due','Status','Action'],S.uts.filter(vis).map(u=>{const l=u.due-S.off;return`<tr><td><b>${u.id}</b><br>${e(u.inst)}</td><td>${e(u.cond)}</td><td>${dt(u.due)}<br>${u.st==='Pending'?bd(l<0?'bad':l<=14?'wn':'gr',l<0?-l+'d overdue':l+'d left'):''}</td><td>${bd(u.st==='Verified'?'ok':u.st==='Submitted'?'in':'gr',u.st)}</td><td>${u.st==='Pending'&&!isOff()?`<button class="s p" onclick="act('usub','${u.id}')">Upload evidence</button>`:u.st==='Submitted'&&isOff()?`<button class="s p" onclick="act('uver','${u.id}')">Verify</button>`:''}</td></tr>`}))}</div>`},
+Documents(){return`<div class="card">${tbl(['ID / Institution','Document','Valid till','Status','Action'],S.docs.filter(vis).map(d=>{const l=d.exp-S.off;return`<tr><td><b>${d.id}</b><br>${e(d.inst)}</td><td>${d.name}</td><td>${dt(d.exp)}<br>${d.st==='Valid'?bd(l<0?'bad':l<=14?'wn':'ok',l<0?'Expired '+-l+'d':l+'d left'):''}</td><td>${bd(d.st==='Valid'?'ok':'in',d.st)}</td><td>${d.st==='Valid'&&!isOff()&&l<=30?`<button class="s p" onclick="act('dsub','${d.id}')">Submit renewal</button>`:d.st!=='Valid'&&isOff()?`<button class="s p" onclick="act('dver','${d.id}')">Verify renewal</button>`:''}</td></tr>`}))}</div>`},
+Alerts(){const A=alerts().filter(vis);return`<div class="note"><b>Escalation ladder (days overdue):</b> 0–7 → Regional Officer · 8–15 → Regional Director · 16+ → Bureau Head. Use the date buttons above to watch alerts escalate.</div><div class="card"><button class="s" onclick="csv()">Export CSV report</button><br><br>${tbl(['Type','Details','Notified','Level'],A.map(a=>`<tr><td>${a.type}</td><td>${e(a.msg)}</td><td>${a.lv==='Upcoming'?'Institution':a.lv.split(' · ')[1]+' + Institution'}</td><td>${lvb(a.lv)}</td></tr>`))}</div>`},
+Audit(){return`<div class="card">${tbl(['Date','Actor','Action','Details','Hash'],S.audit.slice(-60).reverse().map(r=>`<tr><td>${dt(r.t)}</td><td>${e(r.actor)}</td><td>${e(r.act)}</td><td>${e(r.det)}</td><td><code>${r.h}</code></td></tr>`))}</div>`},
+ApplicationDetail(){const a=S.detail;if(!a)return'<div class="card">Application details could not be loaded.</div>';const d=a.details||{},docs=a.documents||[];
+return`<div class="detailhead"><button onclick="closeApplication()">← Applications</button><h2>${e(a.id)}</h2><div>${['institution','bureau'].includes(U.role)&&a.status!=='Completed'?'<button class="p" onclick="applicationForm(true)">Edit application</button> ':''}<button onclick="window.print()">Print summary</button></div></div>
+<div class="card"><h3>Overview</h3><div class="formgrid"><div><b>Institution</b><br>${e(a.inst)}</div><div><b>AICTE Permanent ID</b><br>${e(d.permanentId||'—')}</div><div><b>Application number</b><br>${e(d.applicationNumber||a.id)}</div><div><b>Academic year</b><br>${e(d.academicYear||'—')}</div><div><b>Category</b><br>${e(d.category||'—')}</div><div><b>Workflow</b><br>${e(a.path)}</div><div><b>Stage</b><br>${e(PATHS[a.path]?.[a.i]||'—')}</div><div><b>Status</b><br>${bd(a.status==='Returned'?'wn':a.status==='Completed'?'ok':'in',a.status||'In Review')}</div><div><b>Region / State</b><br>${e(a.reg)} / ${e(d.state||'—')}</div><div><b>Submission date</b><br>${e(d.submissionDate?new Date(d.submissionDate).toLocaleString():'Not submitted')}</div><div><b>Contact</b><br>${e(d.contactPerson||'—')} · ${e(d.contactEmail||'—')} · ${e(d.contactMobile||'—')}</div><div><b>Address</b><br>${e(d.address||'—')}</div><div class="wide"><b>Required documents</b><br>${e(d.requiredDocuments||'—')}</div><div class="wide"><b>Description</b><br>${e(d.description||'—')}</div></div></div>
+<div class="card"><h3>Workflow timeline</h3><div class="timeline">${(a.history||[]).length?(a.history||[]).slice().reverse().map(x=>`<div class="event"><b>${e(x.action)}</b> · ${e(x.user)}<br><small>${e(x.at)}${x.previousStatus||x.newStatus?` · ${e(x.previousStatus||'—')} → ${e(x.newStatus||'—')}`:''}</small>${x.remarks?`<div>${e(x.remarks)}</div>`:''}</div>`).join(''):'<small>No recorded application events yet.</small>'}</div></div>
+<div class="card"><h3>Documents</h3>${docs.length?tbl(['Category','File','Size','Uploaded','Uploader','Status','Reviewed by','Actions'],docs.map(x=>`<tr><td>${e(x.category)}</td><td>${e(x.fileName)}</td><td>${(x.size/1024).toFixed(1)} KB</td><td>${e(new Date(x.uploadedAt).toLocaleString())}</td><td>${e(x.uploadedBy)}</td><td>${bd(x.verificationStatus==='Verified'?'ok':x.verificationStatus==='Returned'?'wn':'in',x.verificationStatus)}</td><td>${e(x.verifiedBy||'—')}</td><td><button class="s" onclick="openPreview('${e(x.id)}')">Preview</button> <a class="s" href="${documentUrl(a.id,x.id,true)}">Download</a>${isOff()&&x.verificationStatus==='Pending'?` <button class="s p" onclick="reviewDocument('${e(a.id)}','${e(x.id)}','Verified')">Verify</button> <button class="s" onclick="reviewDocument('${e(a.id)}','${e(x.id)}','Returned')">Return</button>`:''}</td></tr>`)):'<small>No documents uploaded.</small>'}
+${U.role==='institution'&&a.status!=='Completed'?`<div class="field" style="margin-top:14px"><label for="docCategory">Document category</label><input id="docCategory" maxlength="100" placeholder="e.g. Application supporting document"></div><div class="dropzone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFiles(event)" onclick="if(event.target.type!=='file')document.getElementById('detailFiles').click()"><b>Drag and drop files here</b><br><small>or click to browse · PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX · max <span class="upload-limit">15 MB</span> per file</small><input id="detailFiles" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" onchange="selectFiles(event)"></div><div id="queuedFiles"></div><button class="p" onclick="uploadDocuments('${e(a.id)}')">Upload selected files</button><div id="uploadStatus" role="status"></div>`:''}</div>
+<dialog id="preview"><div class="detailhead"><b id="previewTitle"></b><div><a id="previewDownload" class="s">Download</a> <button onclick="previewFullscreen()">Full screen</button> <button onclick="document.getElementById('preview').close()">Close</button></div></div><div id="previewBody" class="previewbody"></div></dialog>`},
+ApplicationForm(){const a=S.editing?S.detail:null,d=a?.details||{},v=(k,def='')=>e(d[k]||def);
+return`<div class="detailhead"><button onclick="${a?`openApplication('${e(a.id)}')`:`goToTab('Applications')`}">← Cancel</button><h2>${a?'Edit':'Create'} application</h2></div><form id="applicationForm" onsubmit="return saveApplication(event)"><div class="card"><div class="formgrid">
+<label class="field">Institution name<input name="inst" value="${e(a?.inst||U.inst||'')}" required maxlength="160" ${U.role==='institution'?'readonly':''}></label>
+<label class="field">AICTE Permanent ID<input name="permanentId" value="${v('permanentId')}" required></label>
+<label class="field">Academic year<input name="academicYear" value="${v('academicYear')}" placeholder="2026-27" required></label>
+<label class="field">Application category<input name="category" value="${v('category')}" required></label>
+<label class="field">State<input name="state" value="${v('state')}" required></label>
+<label class="field">Region<input name="reg" value="${e(a?.reg||U.reg||'')}" required ${U.role==='institution'?'readonly':''}></label>
+<label class="field wide">Institution address<textarea name="address" maxlength="500" required>${v('address')}</textarea></label>
+<label class="field">Contact person<input name="contactPerson" value="${v('contactPerson')}" required></label>
+<label class="field">Contact email<input name="contactEmail" type="email" value="${v('contactEmail',U.email)}" required></label>
+<label class="field">Contact mobile<input name="contactMobile" type="tel" value="${v('contactMobile')}" required></label>
+<label class="field">Workflow type<select name="path" required>${Object.keys(PATHS).map(x=>`<option value="${e(x)}" ${(a?.path||'Scrutiny + EVC')===x?'selected':''}>${e(x)}</option>`).join('')}</select></label>
+<label class="field wide">Required documents<input name="requiredDocuments" value="${v('requiredDocuments')}" placeholder="List required documents" required></label>
+<label class="field wide">Application description<textarea name="description" maxlength="3000" required>${v('description')}</textarea></label>
+</div></div><div class="card"><h3>Supporting documents</h3><label class="field">Document category<input name="documentCategory" value="Supporting document" maxlength="100" required></label><div class="dropzone" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFiles(event)" onclick="if(event.target.type!=='file')document.getElementById('formFiles').click()"><b>Drag and drop files here</b><br><small>or click to browse · PDF, JPG, JPEG, PNG, DOC, DOCX, XLS, XLSX · max <span class="upload-limit">15 MB</span> per file</small><input id="formFiles" type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" onchange="selectFiles(event)"></div><div id="queuedFiles">${queuedFilesMarkup()}</div></div><div class="ctl"><button class="p" type="submit" value="submit">${a?'Save and submit':'Submit application'}</button><button type="submit" value="draft">Save draft</button></div></form><div id="uploadStatus" role="status"></div>`}
+};
+
+function csv(){const r=[['Type','Ref','Institution','Region','Days left','Level','Message']].concat(alerts().filter(vis).map(a=>[a.type,a.ref,a.inst,a.reg,a.left,a.lv,a.msg]));const b=new Blob([r.map(x=>x.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'});const u=document.createElement('a');u.href=URL.createObjectURL(b);u.download='aicte-alerts.csv';u.click()}
+
+async function api(p,b,method){const verb=method||(b?'POST':'GET');const r=await fetch('/api/'+p,{method:verb,headers:b?{'Content-Type':'application/json'}:{},body:b?JSON.stringify(b):undefined,credentials:'same-origin'});
+const j=await r.json().catch(()=>({}));if(r.status===401&&p!=='login'){showLogin();throw new Error('Session expired – please sign in')}if(!r.ok)throw new Error(j.error||'Request failed');return j}
+function load(d){const t=S.tab;S=Object.assign(d,{tab:t});U=d.user}
+function showLogin(){document.getElementById('app').hidden=true;document.getElementById('login').hidden=false;api('hint').then(h=>document.getElementById('hint').textContent=h.hint||'').catch(()=>{})}
+async function signIn(ev){ev.preventDefault();const er=document.getElementById('err');er.textContent='';
+try{load(await api('login',{email:document.getElementById('em').value,password:document.getElementById('pw').value}));document.getElementById('pw').value='';await enterCurrentRoute()}catch(x){er.textContent=x.message}return false}
+async function logout(){await api('logout',{}).catch(()=>{});U=null;showLogin()}
+async function run(p,b){try{load(await api(p,b));go()}catch(x){alert(x.message)}}
+function act(k,id){const b={k,id};
+if(k==='adv'&&!confirm('Confirm stage completion as authorised official? Decision remains with the competent authority.'))return;
+if(k==='ret'){const r=prompt('Reason for return (mandatory):');if(!r||!r.trim())return;b.reason=r.trim()}
+if(k==='sch'){const d=prompt('Schedule EVC after how many days from today?','7');if(d===null||isNaN(+d))return;b.days=+d}
+run('act',b)}
+const tick=n=>run('tick',{n});
+function reset(){if(confirm('Restore the platform’s initial records?'))run('reset',{})}
+async function chpw(){const o=prompt('Current password:');if(!o)return;const n=prompt('New password (min 8 characters):');if(!n)return;
+try{await api('password',{old:o,next:n});alert('Password changed')}catch(x){alert(x.message)}}
+function documentUrl(applicationId,documentId,download=false){return`/api/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}${download?'?download=1':''}`}
+function queuedFilesMarkup(){return queuedFiles.map((f,i)=>`<div class="file-row"><span>${e(f.name)} · ${(f.size/1024).toFixed(1)} KB</span><button type="button" class="s" onclick="removeQueuedFile(${i})">Remove</button></div>`).join('')}
+function refreshQueuedFiles(){const el=document.getElementById('queuedFiles');if(el)el.innerHTML=queuedFilesMarkup()}
+function queueFiles(files){for(const f of files){if(!queuedFiles.some(q=>q.name===f.name&&q.size===f.size&&q.lastModified===f.lastModified))queuedFiles.push(f)}refreshQueuedFiles()}
+function selectFiles(ev){queueFiles(ev.target.files);ev.target.value=''}
+function removeQueuedFile(i){queuedFiles.splice(i,1);refreshQueuedFiles()}
+function dragOver(ev){ev.preventDefault();ev.currentTarget.classList.add('drag')}
+function dragLeave(ev){ev.currentTarget.classList.remove('drag')}
+function dropFiles(ev){ev.preventDefault();ev.currentTarget.classList.remove('drag');queueFiles(ev.dataTransfer.files)}
+function goToTab(tab){S.detail=null;S.editing=false;S.creating=false;S.tab=tab;history.pushState({},'','/');go()}
+async function openApplication(id,updateHistory=true){try{queuedFiles=[];S.detail=await api(`applications/${encodeURIComponent(id)}`);S.editing=false;S.creating=false;S.tab='Applications';if(updateHistory)history.pushState({},'',`/applications/${encodeURIComponent(id)}`);go()}catch(err){alert(err.message)}}
+function closeApplication(){queuedFiles=[];S.detail=null;S.editing=false;S.creating=false;S.tab='Applications';history.pushState({},'','/');go()}
+function applicationForm(edit=false){queuedFiles=[];S.editing=edit;S.creating=!edit;S.tab='Applications';go()}
+function mimeFor(name){return({'.pdf':'application/pdf','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.doc':'application/msword','.docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','.xls':'application/vnd.ms-excel','.xlsx':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})[name.slice(name.lastIndexOf('.')).toLowerCase()]||'application/octet-stream'}
+function uploadFile(applicationId,file,category,onProgress){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',`/api/applications/${encodeURIComponent(applicationId)}/documents`);
+xhr.withCredentials=true;xhr.setRequestHeader('Content-Type',file.type||mimeFor(file.name));xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));xhr.setRequestHeader('X-Document-Category',category);
+xhr.upload.onprogress=ev=>{if(ev.lengthComputable)onProgress(Math.round(ev.loaded/ev.total*100))};
+xhr.onload=()=>{let data={};try{data=JSON.parse(xhr.responseText)}catch{}if(xhr.status>=200&&xhr.status<300)resolve(data);else reject(new Error(data.error||`Upload failed (${xhr.status})`))};
+xhr.onerror=()=>reject(new Error('Network error while uploading document'));xhr.send(file)})}
+async function uploadDocuments(applicationId,category){const status=document.getElementById('uploadStatus'),categoryInput=document.getElementById('docCategory')?.value||document.querySelector('[name="documentCategory"]')?.value||category;
+if(!queuedFiles.length)return;if(!categoryInput?.trim()){alert('Enter a document category');return}
+const failed=[];for(const f of queuedFiles){try{if(status)status.textContent=`Uploading ${f.name}: 0%`;await uploadFile(applicationId,f,categoryInput.trim(),pct=>{if(status)status.textContent=`Uploading ${f.name}: ${pct}%`})}catch(err){failed.push(f);if(status)status.textContent=`${f.name}: ${err.message}`}}
+queuedFiles=failed;
+try{load(await api('state'));S.detail=await api(`applications/${encodeURIComponent(applicationId)}`)}catch(err){if(status)status.textContent=err.message;return}
+go();refreshQueuedFiles();const result=document.getElementById('uploadStatus');if(result)result.textContent=failed.length?`${failed.length} upload(s) failed. Select Upload selected files to retry.`:'Uploads complete.'}
+async function reviewDocument(applicationId,documentId,status){const reason=status==='Returned'?prompt('Reason for returning this document (required):'):'';if(status==='Returned'&&!reason?.trim())return;
+try{await api(`applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}`,{status,reason:reason?.trim()||''},'PATCH');S.detail=await api(`applications/${encodeURIComponent(applicationId)}`);go()}catch(err){alert(err.message)}}
+async function saveApplication(ev){ev.preventDefault();const form=ev.currentTarget,formData=new FormData(form),body=Object.fromEntries(formData.entries()),submitted=ev.submitter?.value==='submit',category=body.documentCategory;delete body.documentCategory;body.submit=submitted;
+const status=document.getElementById('uploadStatus');try{const old=S.editing?S.detail:null;
+const result=await api(old?`applications/${encodeURIComponent(old.id)}`:'applications',body,old?'PATCH':'POST');
+load(result.state);S.detail=result.application;S.editing=false;S.creating=false;history.pushState({},'',`/applications/${encodeURIComponent(S.detail.id)}`);
+if(queuedFiles.length)await uploadDocuments(S.detail.id,category);else go();
+}catch(err){if(status)status.textContent=err.message;else alert(err.message)}return false}
+function openPreview(id){const doc=(S.detail?.documents||[]).find(x=>x.id===id);if(!doc)return;const url=documentUrl(S.detail.id,id),body=document.getElementById('previewBody'),dialog=document.getElementById('preview');
+document.getElementById('previewTitle').textContent=doc.fileName;document.getElementById('previewDownload').href=documentUrl(S.detail.id,id,true);
+body.innerHTML=doc.mimeType==='application/pdf'?`<iframe title="Document preview" src="${url}"></iframe>`:doc.mimeType.startsWith('image/')?`<img alt="${e(doc.fileName)}" src="${url}">`:`<p>Preview is not available for this file type. <a href="${documentUrl(S.detail.id,id,true)}">Download the document</a>.</p>`;
+dialog.showModal()}
+function previewFullscreen(){const el=document.getElementById('previewBody');if(el.requestFullscreen)el.requestFullscreen().catch(err=>alert(`Could not open full screen: ${err.message}`))}
+async function enterCurrentRoute(){S.detail=null;S.editing=false;S.creating=false;const match=location.pathname.match(/^\/applications\/([^/]+)$/);if(match&&match[1]!=='new'){S.detail=await api(`applications/${encodeURIComponent(decodeURIComponent(match[1]))}`);S.tab='Applications'}else if(match&&match[1]==='new'&&U.role==='institution'){S.editing=true;S.creating=true;S.tab='Applications'}go()}
+function go(){document.getElementById('login').hidden=true;document.getElementById('app').hidden=false;
+document.getElementById('clk').textContent=dt(S.off);document.getElementById('adm').hidden=U.role!=='bureau';
+const tabs=['Dashboard','Applications','EVC','Undertakings','Documents','Alerts',...(U.role==='bureau'?['Audit']:[])];if(!tabs.includes(S.tab))S.tab='Dashboard';
+document.getElementById('nav').innerHTML=tabs.map(t=>`<button class="${t===S.tab?'on':''}" onclick="S.tab='${t}';S.detail=null;S.editing=false;S.creating=false;history.pushState({},'', '/');go()">${t}</button>`).join('');
+document.getElementById('m').innerHTML=S.editing||S.creating?VIEWS.ApplicationForm():S.detail?VIEWS.ApplicationDetail():VIEWS[S.tab]();
+const limit=(MAX_UPLOAD_BYTES/1024/1024).toFixed(2).replace(/\.?0+$/,'');document.querySelectorAll('.upload-limit').forEach(el=>el.textContent=`${limit} MB`)}
+window.addEventListener('popstate',()=>{if(U)enterCurrentRoute().catch(err=>alert(err.message))});
+let MAX_UPLOAD_BYTES=15*1024*1024;api('config').then(cfg=>{MAX_UPLOAD_BYTES=cfg.maxUploadBytes;if(U)go()}).catch(err=>console.error('Could not load upload size setting:',err));
+api('session').then(async result=>{if(!result.authenticated){showLogin();return}load(result.state);await enterCurrentRoute()}).catch(err=>{showLogin();console.error('Could not check the current session:',err)});
+</script></body></html>
