@@ -5,7 +5,8 @@ const PORT = process.env.PORT || 3000, PROD = process.env.NODE_ENV === 'producti
 const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/+$/, ''), APP_BACKEND_URL = String(process.env.APP_BACKEND_URL || '').replace(/\/+$/, ''), APP_BACKEND_SECRET = process.env.APP_BACKEND_SECRET || '';
 const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'application-documents';
 const REMOTE = Boolean(SUPABASE_URL && APP_BACKEND_URL && APP_BACKEND_SECRET);
-let DB_VERSION = 0, pendingSave = null;
+let DB_VERSION = 0, pendingSave = null, lastRemoteLoadAt = 0;
+const REMOTE_CACHE_MS = Number(process.env.REMOTE_CACHE_MS || 2000);
 async function sbRequest(url, options = {}) {
  const original = new URL(url), endpoint = `${APP_BACKEND_URL}?path=${encodeURIComponent(original.pathname + original.search)}`;
  const response = await fetch(endpoint, {...options, headers:{...(options.headers||{}),'x-nigrani-secret':APP_BACKEND_SECRET}});
@@ -102,13 +103,15 @@ async function loadRemote(){
   if(admin){admin.pw=hashPw(resetPassword);DB.adminPasswordResetFor=resetEmail;log('System','ADMIN PASSWORD RESET','One-time bootstrap password reset completed');await save();}
  }
 
+ lastRemoteLoadAt=Date.now();
+
 }
 function save(){
  if(!REMOTE){const t=FILE+'.tmp';fs.mkdirSync(DIR,{recursive:true});fs.writeFileSync(t,JSON.stringify(DB));fs.renameSync(t,FILE);return;}
  pendingSave=(async()=>{
   const rows=await(await sbRequest(`${SUPABASE_URL}/rest/v1/rpc/save_app_state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_id:'primary',p_expected_version:DB_VERSION,p_data:DB})})).json();
   if(!Array.isArray(rows)||!rows.length)throw Object.assign(new Error('Data changed in another request; reload and retry'),{status:409});
-  DB_VERSION=Number(rows[0].version);
+  DB_VERSION=Number(rows[0].version);lastRemoteLoadAt=Date.now();
  })();return pendingSave;
 }
 function appStatus(a) { return a.ret ? 'Returned' : a.done ? 'Completed' : a.state || 'In Review'; }
@@ -182,7 +185,7 @@ app.use('/api',(req,res,next)=>{
  let released=false;const unlock=()=>{if(!released){released=true;release();}};
  res.once('finish',unlock);res.once('close',unlock);
  previous.then(async()=>{
-  try{if(!REMOTE){next();return;}await loadRemote();const send=res.json.bind(res);res.json=body=>{const pending=pendingSave;pendingSave=null;if(!pending)return send(body);pending.then(()=>send(body)).catch(next);return res;};next();}
+  try{if(!REMOTE||req.path==='/config'||req.path==='/hint'){next();return;}if(Date.now()-lastRemoteLoadAt>REMOTE_CACHE_MS)await loadRemote();const send=res.json.bind(res);res.json=body=>{const pending=pendingSave;pendingSave=null;if(!pending)return send(body);pending.then(()=>send(body)).catch(next);return res;};next();}
   catch(err){unlock();next(err);}
  }).catch(err=>{unlock();next(err);});
 });
@@ -233,7 +236,7 @@ app.post('/api/login', (req, res) => {
   if(u.status==='pending')return res.status(403).json({error:'Your registration is awaiting Admin approval.'});
   if(u.status==='rejected')return res.status(403).json({error:'This registration was not approved. Contact the AICTE Admin.'});
   tries.delete(ip); setTok(res, sign({ sub: u.id, exp: Math.floor(Date.now() / 1000) + 8 * 3600 }), 8 * 3600);
-  log(u.name, 'LOGIN', u.email); save(); res.json(view(u));
+  res.json(view(u));
 });
 app.post('/api/logout', (req, res) => { setTok(res, '', 0); res.json({ ok: true }); });
 app.get('/api/state', auth, (req, res) => res.json(view(req.user)));
