@@ -17,21 +17,29 @@ AICTE approval work includes multiple application pathways and processing stages
 
 ## Product preview
 
-The screenshots below are stored in this repository and loaded from GitHub's raw asset host for reliable rendering in the README.
+These are embedded images (not text-only links). If an image does not load in your GitHub client, use its **Open full-size image** link below it.
 
 ### Role-based dashboard
-[![Dashboard preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/dashboard.svg)](docs/screenshots/dashboard.svg)
+<img src="./docs/screenshots/dashboard.svg" alt="AICTE Nigrani role-based dashboard preview" width="100%" />
+
+[Open full-size dashboard image](./docs/screenshots/dashboard.svg)
 
 ### Application case file
-[![Application detail preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/application-detail.svg)](docs/screenshots/application-detail.svg)
+<img src="./docs/screenshots/application-detail.svg" alt="AICTE Nigrani application case file preview" width="100%" />
+
+[Open full-size application detail image](./docs/screenshots/application-detail.svg)
 
 ### Escalation and alerts
-[![Escalation and alerts preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/alerts-escalation.svg?v=f7892e8)](docs/screenshots/alerts-escalation.svg)
+<img src="./docs/screenshots/alerts-escalation.svg" alt="AICTE Nigrani escalation and alerts preview" width="100%" />
+
+[Open full-size escalation and alerts image](./docs/screenshots/alerts-escalation.svg)
 
 ### Sign-in and registration
-[![Sign-in and registration preview](https://raw.githubusercontent.com/nikhilkumar200408/aictc_nigraani/main/docs/screenshots/sign-in-registration.svg)](docs/screenshots/sign-in-registration.svg)
+<img src="./docs/screenshots/sign-in-registration.svg" alt="AICTE Nigrani sign-in and registration preview" width="100%" />
 
-[Open the live prototype](https://aicta-nigraani.vercel.app) · [Read the evaluator guide](docs/EVALUATOR_DEMO.md)
+[Open full-size sign-in and registration image](./docs/screenshots/sign-in-registration.svg)
+
+[Open the live prototype](https://aictc-nigraani.vercel.app) · [Read the evaluator guide](docs/EVALUATOR_DEMO.md)
 
 ## What makes the solution distinctive
 
