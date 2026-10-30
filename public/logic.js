@@ -1,7 +1,7 @@
 // Shared by server (authoritative) and browser (display). UMD-style.
 (function(){
 const SLA={'Scrutiny':15,'EVC':30,'SAC/SHC':10};
-const PATHS={'Only Scrutiny':['Scrutiny'],'Scrutiny + EVC':['Scrutiny','EVC'],'Only EVC':['EVC'],'EVC + SAC/SHC':['EVC','SAC/SHC'],'Scrutiny + EVC + SAC/SHC':['Scrutiny','EVC','SAC/SHC']};
+const PATHS={'Only Scrutiny':['Scrutiny'],'Scrutiny + EVC':['Scrutiny','EVC'],'Only EVC':['EVC'],'Only SAC/SHC':['SAC/SHC'],'Scrutiny + SAC/SHC':['Scrutiny','SAC/SHC'],'EVC + SAC/SHC':['EVC','SAC/SHC'],'Scrutiny + EVC + SAC/SHC':['Scrutiny','EVC','SAC/SHC']};
 const dt=(base,n)=>new Date(base+n*864e5).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
 function lvl(left){if(left>14)return null;if(left>=0)return'Upcoming';const d=-left;return d<=7?'L1 · Regional Officer':d<=15?'L2 · Regional Director':'L3 · Bureau Head'}
 function alerts(S){const A=[],add=(type,ref,x,left,msg,thr)=>{const l=lvl(left);if(l&&left<=thr)A.push({key:type+ref,type,ref,inst:x.inst,reg:x.reg,left,lv:l,msg})};
