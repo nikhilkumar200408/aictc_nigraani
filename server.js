@@ -151,7 +151,7 @@ function sweep() {
 /* ---------- access control ---------- */
 const canSee = (u, x) => u.role === 'bureau' || (u.role === 'regional' ? x.reg === u.reg : x.inst === u.inst);
 const view = u => ({
-  user: { name: u.name, role: u.role, reg: u.reg, inst: u.inst, email: u.email }, off: DB.off,
+  user: { name: u.name, role: u.role, reg: u.reg, inst: u.inst, email: u.email }, users: u.role === 'bureau' ? DB.users.map(x => ({ name: x.name, email: x.email, role: x.role, reg: x.reg, inst: x.inst })) : [], off: DB.off,
   apps: DB.apps.filter(x => canSee(u, x)), uts: DB.uts.filter(x => canSee(u, x)), docs: DB.docs.filter(x => canSee(u, x)),
   audit: u.role === 'bureau' ? DB.audit.slice(-200) : [], chainOk: u.role === 'bureau' ? L.verifyChain(DB.audit) : true
 });
