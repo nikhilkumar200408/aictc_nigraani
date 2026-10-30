@@ -38,7 +38,7 @@ dialog{border:0;border-radius:12px;padding:18px;max-width:min(1000px,96vw);width
 </style></head><body>
 <section id="login" hidden>
 <h1>AICTE <span>Nigrani</span></h1><p><small>Sign in</small></p>
-<form onsubmit="return signIn(event)"><label>Email<input id="em" type="email" autocomplete="username" required></label>
+<form onsubmit="return signIn(event)"><label>Login as<select id="role" required><option value="bureau">Admin</option><option value="regional">Regional Officer</option><option value="institution">Institution Head</option></select></label><label>Email<input id="em" type="email" autocomplete="username" required></label>
 <label>Password<input id="pw" type="password" autocomplete="current-password" required></label>
 <div class="err" id="err"></div><button class="p">Sign in</button></form><p><small id="hint"></small></p>
 </section>
@@ -107,7 +107,7 @@ const j=await r.json().catch(()=>({}));if(r.status===401&&p!=='login'){showLogin
 function load(d){const t=S.tab;S=Object.assign(d,{tab:t});U=d.user}
 function showLogin(){document.getElementById('app').hidden=true;document.getElementById('login').hidden=false;api('hint').then(h=>document.getElementById('hint').textContent=h.hint||'').catch(()=>{})}
 async function signIn(ev){ev.preventDefault();const er=document.getElementById('err');er.textContent='';
-try{load(await api('login',{email:document.getElementById('em').value,password:document.getElementById('pw').value}));document.getElementById('pw').value='';await enterCurrentRoute()}catch(x){er.textContent=x.message}return false}
+try{load(await api('login',{role:document.getElementById('role').value,email:document.getElementById('em').value,password:document.getElementById('pw').value}));document.getElementById('pw').value='';await enterCurrentRoute()}catch(x){er.textContent=x.message}return false}
 async function logout(){await api('logout',{}).catch(()=>{});U=null;showLogin()}
 async function run(p,b){try{load(await api(p,b));go()}catch(x){alert(x.message)}}
 function act(k,id){const b={k,id};

@@ -2,6 +2,17 @@
 const express = require('express'), crypto = require('crypto'), fs = require('fs'), path = require('path');
 const L = require('./public/logic.js');
 const PORT = process.env.PORT || 3000, PROD = process.env.NODE_ENV === 'production';
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\\/+$/, ''), APP_BACKEND_URL = String(process.env.APP_BACKEND_URL || '').replace(/\\/+$/, ''), APP_BACKEND_SECRET = process.env.APP_BACKEND_SECRET || '';
+const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'application-documents';
+const REMOTE = Boolean(SUPABASE_URL && APP_BACKEND_URL && APP_BACKEND_SECRET);
+let DB_VERSION = 0, pendingSave = null;
+async function sbRequest(url, options = {}) {
+ const original = new URL(url), endpoint = `${APP_BACKEND_URL}?path=${encodeURIComponent(original.pathname + original.search)}`;
+ const response = await fetch(endpoint, {...options, headers:{...(options.headers||{}),'x-nigrani-secret':APP_BACKEND_SECRET}});
+ if(!response.ok){const detail=await response.text().catch(()=> '');throw Object.assign(new Error(`Backend request failed (${response.status}): ${detail.slice(0,250)}`),{status:response.status});}
+ return response;
+}
+const sbPath = p => p.split('/').map(encodeURIComponent).join('/');
 const DIR = process.env.DATA_DIR || path.join(__dirname, 'data'), FILE = path.join(DIR, 'db.json');
 const UPLOAD_DIR = path.join(DIR, 'uploads'), MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_BYTES || 15 * 1024 * 1024);
 if (!Number.isSafeInteger(MAX_UPLOAD_BYTES) || MAX_UPLOAD_BYTES < 1024 * 1024 || MAX_UPLOAD_BYTES > 100 * 1024 * 1024) throw new Error('MAX_UPLOAD_BYTES must be between 1048576 and 104857600');
@@ -43,12 +54,35 @@ function seedUsers() {
     U('narmada@inst.demo', 'Narmada School (Registrar)', 'institution', 'West', 'Narmada School of Management')];
 }
 let DB;
-function load() {
-  fs.mkdirSync(DIR, { recursive: true });
-  try { DB = JSON.parse(fs.readFileSync(FILE, 'utf8')); }
-  catch { DB = Object.assign(seedData(), { users: seedUsers(), secret: crypto.randomBytes(48).toString('hex') }); log('System', 'INIT', 'Platform initialised'); save(); }
+function loadLocal() {
+ fs.mkdirSync(DIR,{recursive:true});
+ try{DB=JSON.parse(fs.readFileSync(FILE,'utf8'));}
+ catch{DB=Object.assign(seedData(),{users:seedUsers(),secret:crypto.randomBytes(48).toString('hex')});log('System','INIT','Platform initialised');save();}
 }
-function save() { const t = FILE + '.tmp'; fs.writeFileSync(t, JSON.stringify(DB)); fs.renameSync(t, FILE); }
+async function loadRemote(){
+ if(!REMOTE)throw Object.assign(new Error('Persistent database is not configured'),{status:503});
+ if(PROD&&(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32))throw Object.assign(new Error('JWT_SECRET is not configured'),{status:503});
+ const url=`${SUPABASE_URL}/rest/v1/app_state?select=data,version&id=eq.primary`;
+ let rows=await(await sbRequest(url)).json();
+ if(!rows.length){
+  const users=seedUsers();if(PROD&&!users.length)throw Object.assign(new Error('Bootstrap administrator is not configured'),{status:503});
+  const initial=Object.assign(seedData(),{users,secret:crypto.randomBytes(48).toString('hex')});
+  try{await sbRequest(`${SUPABASE_URL}/rest/v1/app_state`,{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({id:'primary',data:initial,version:1})});}
+  catch(err){if(err.status!==409)throw err;}
+  rows=await(await sbRequest(url)).json();
+ }
+ if(!rows.length)throw Object.assign(new Error('Could not initialise application data'),{status:503});
+ DB=rows[0].data;DB_VERSION=Number(rows[0].version);
+ const before=JSON.stringify(DB.sent||{});sweep();if(JSON.stringify(DB.sent||{})!==before)await save();
+}
+function save(){
+ if(!REMOTE){const t=FILE+'.tmp';fs.mkdirSync(DIR,{recursive:true});fs.writeFileSync(t,JSON.stringify(DB));fs.renameSync(t,FILE);return;}
+ pendingSave=(async()=>{
+  const rows=await(await sbRequest(`${SUPABASE_URL}/rest/v1/rpc/save_app_state`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_id:'primary',p_expected_version:DB_VERSION,p_data:DB})})).json();
+  if(!Array.isArray(rows)||!rows.length)throw Object.assign(new Error('Data changed in another request; reload and retry'),{status:409});
+  DB_VERSION=Number(rows[0].version);
+ })();return pendingSave;
+}
 function appStatus(a) { return a.ret ? 'Returned' : a.done ? 'Completed' : a.state || 'In Review'; }
 function addAppHistory(a, user, action, remarks, previousStatus, newStatus) {
   a.history ||= [];
@@ -103,7 +137,7 @@ const view = u => ({
 });
 
 /* ---------- app ---------- */
-load(); sweep(); save();
+if(!REMOTE){loadLocal();sweep();save();}
 const app = express();
 app.disable('x-powered-by'); if (PROD) app.set('trust proxy', 1);
 app.use((req, res, next) => {
@@ -113,7 +147,17 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: '20kb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname,'public')));
+let apiQueue=Promise.resolve();
+app.use('/api',(req,res,next)=>{
+ const previous=apiQueue;let release;apiQueue=new Promise(resolve=>{release=resolve;});
+ let released=false;const unlock=()=>{if(!released){released=true;release();}};
+ res.once('finish',unlock);res.once('close',unlock);
+ previous.then(async()=>{
+  try{await loadRemote();const send=res.json.bind(res);res.json=body=>{const pending=pendingSave;pendingSave=null;if(!pending)return send(body);pending.then(()=>send(body)).catch(next);return res;};next();}
+  catch(err){unlock();next(err);}
+ }).catch(err=>{unlock();next(err);});
+});
 
 const tries = new Map();
 const cookie = (req, n) => (req.headers.cookie || '').split(';').map(s => s.trim().split('=')).find(p => p[0] === n)?.[1];
@@ -125,7 +169,11 @@ function auth(req, res, next) {
 }
 const bureau = (req, res, next) => req.user.role === 'bureau' ? next() : res.status(403).json({ error: 'Bureau access only' });
 
-app.get('/healthz', (_, res) => res.json({ ok: true }));
+app.get('/healthz',async(_,res)=>{
+ if(!REMOTE)return res.status(PROD?503:200).json({ok:!PROD,database:'local-only'});
+ try{await sbRequest(`${SUPABASE_URL}/rest/v1/app_state?select=id&limit=1`);await sbRequest(`${SUPABASE_URL}/storage/v1/bucket/${encodeURIComponent(SUPABASE_BUCKET)}`);res.json({ok:true,database:'connected',storage:'connected'});}
+ catch(_){res.status(503).json({ok:false,database:'unavailable',storage:'unavailable'});}
+});
 app.get('/favicon.ico', (_, res) => res.type('image/svg+xml').send('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1e3a8a"/><text x="32" y="43" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#fff">N</text></svg>'));
 app.get('/api/config', (_, res) => res.json({ maxUploadBytes: MAX_UPLOAD_BYTES }));
 app.get('/api/hint', (_, res) => res.json({ hint: SHOW_HINT ? `Test sign-ins (password ${DEMO_PW}): bureau@aicte.demo · central@aicte.demo · sriram@inst.demo` : null }));
@@ -138,9 +186,9 @@ app.post('/api/login', (req, res) => {
   const ip = req.ip, t = tries.get(ip) || { n: 0, at: Date.now() };
   if (Date.now() - t.at > 9e5) { t.n = 0; t.at = Date.now(); }
   if (t.n >= 8) return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
-  const { email, password } = req.body || {};
+  const { email, password, role } = req.body || {};
   const u = DB.users.find(x => x.email === String(email || '').trim().toLowerCase());
-  if (!u || typeof password !== 'string' || !checkPw(password, u.pw)) { t.n++; tries.set(ip, t); return res.status(401).json({ error: 'Invalid email or password' }); }
+  if (!u || (role && u.role !== role) || typeof password !== 'string' || !checkPw(password, u.pw)) { t.n++; tries.set(ip, t); return res.status(401).json({ error: 'Email, password or selected role is incorrect' }); }
   tries.delete(ip); setTok(res, sign({ sub: u.id, exp: Math.floor(Date.now() / 1000) + 8 * 3600 }), 8 * 3600);
   log(u.name, 'LOGIN', u.email); save(); res.json(view(u));
 });
@@ -210,7 +258,7 @@ app.post('/api/applications/:id/documents', auth, (req, res, next) => {
   const a = DB.apps.find(x => x.id === req.params.id);
   if (!a || !canSee(req.user, a)) return res.status(404).json({ error: 'Application not found' });
   if (req.user.role !== 'institution' || appStatus(a) === 'Completed') return res.status(403).json({ error: 'You cannot upload documents for this application' });
-  express.raw({ type: () => true, limit: MAX_UPLOAD_BYTES })(req, res, err => {
+  express.raw({ type: () => true, limit: MAX_UPLOAD_BYTES })(req, res, async err => {
     if (err) return next(err);
     let rawName = String(req.headers['x-file-name'] || '');
     try { rawName = decodeURIComponent(rawName); } catch { return res.status(400).json({ error: 'Invalid file name encoding' }); }
@@ -229,10 +277,9 @@ app.post('/api/applications/:id/documents', auth, (req, res, next) => {
     doc.checksum = crypto.createHash('sha256').update(buf).digest('hex');
     if ((a.documents || []).some(x => x.category === category && x.checksum === doc.checksum)) return res.status(409).json({ error: 'This document was already uploaded in this category' });
     try {
-      const target = path.join(UPLOAD_DIR, doc.storagePath);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(target, buf, { flag: 'wx', mode: 0o600 });
-    } catch (err) { return next(err); }
+      if(REMOTE)await sbRequest(`${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(SUPABASE_BUCKET)}/${sbPath(doc.storagePath)}`,{method:'POST',headers:{'Content-Type':mime,'x-upsert':'false'},body:buf});
+      else{const target=path.join(UPLOAD_DIR,doc.storagePath);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,buf,{flag:'wx',mode:0o600});}
+    } catch(err){return next(err);}
     a.documents ||= [];
     a.documents.push(doc);
     addAppHistory(a, req.user, 'Document uploaded', `${category}: ${name}`, appStatus(a), appStatus(a));
@@ -262,7 +309,7 @@ app.patch('/api/applications/:id/documents/:documentId', auth, (req, res) => {
   res.json({ ok: true, document: doc });
 });
 
-app.get('/api/applications/:id/documents/:documentId', auth, (req, res, next) => {
+app.get('/api/applications/:id/documents/:documentId', auth, async (req, res, next) => {
   const a = DB.apps.find(x => x.id === req.params.id);
   if (!a || !canSee(req.user, a)) return res.status(404).json({ error: 'Application not found' });
   const doc = (a.documents || []).find(x => x.id === req.params.documentId);
@@ -271,6 +318,7 @@ app.get('/api/applications/:id/documents/:documentId', auth, (req, res, next) =>
   res.set({ 'Content-Type': doc.mimeType, 'Content-Length': String(doc.size), 'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN', 'Content-Security-Policy': "default-src 'self'; frame-ancestors 'self'",
     'Content-Disposition': `${req.query.download === '1' ? 'attachment' : 'inline'}; filename="${doc.fileName.replace(/["\\]/g, '_').replace(/[^\x20-\x7E]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(doc.fileName)}` });
+  if(REMOTE){try{const file=await sbRequest(`${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(SUPABASE_BUCKET)}/${sbPath(doc.storagePath)}`);return res.send(Buffer.from(await file.arrayBuffer()));}catch(err){return next(err);}}
   fs.createReadStream(target).on('error', next).pipe(res);
 });
 
@@ -331,4 +379,4 @@ app.post('/api/password', auth, (req, res) => {
 app.get('/applications/:id', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.use('/api', (_, res) => res.status(404).json({ error: 'Not found' }));
 app.use((err, _req, res, _next) => { console.error(err.message); res.status(err.status || 400).json({ error: err.status === 413 ? `Maximum file size is ${MAX_UPLOAD_LABEL}` : 'Bad request' }); });
-app.listen(PORT, () => console.log(`AICTE Nigrani running on http://localhost:${PORT}`));
+if(require.main===module)app.listen(PORT,()=>console.log(`AICTE Nigrani running on http://localhost:${PORT}`));\nmodule.exports=app;
