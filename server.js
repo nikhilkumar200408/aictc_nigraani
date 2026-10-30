@@ -179,7 +179,7 @@ app.use('/api',(req,res,next)=>{
  }).catch(err=>{unlock();next(err);});
 });
 
-const tries = new Map();
+const tries = new Map(), registrationTries = new Map();
 const cookie = (req, n) => (req.headers.cookie || '').split(';').map(s => s.trim().split('=')).find(p => p[0] === n)?.[1];
 const setTok = (res, t, age) => res.append('Set-Cookie', `tok=${t}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${PROD ? '; Secure' : ''}`);
 function auth(req, res, next) {
@@ -203,6 +203,7 @@ app.get('/api/session', (req, res) => {
 });
 
 app.post('/api/register', (req, res) => {
+ const ip=req.ip,rate=registrationTries.get(ip)||{count:0,at:Date.now()};if(Date.now()-rate.at>3600000){rate.count=0;rate.at=Date.now()}if(rate.count>=5)return res.status(429).json({error:'Too many registration requests. Try again in one hour.'});rate.count++;registrationTries.set(ip,rate);
  const b=req.body||{},email=String(b.email||'').trim().toLowerCase(),name=String(b.name||'').trim(),role=String(b.role||''),reg=String(b.reg||'').trim(),inst=String(b.inst||'').trim(),password=b.password;
  const domain=String(b.domain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/$/,'');
  if(!/^\S+@\S+\.\S+$/.test(email)||name.length<2||name.length>80||!['regional','institution'].includes(role)||typeof password!=='string'||password.length<12)return res.status(400).json({error:'Enter valid details. Password must be at least 12 characters. Admin accounts can only be created by an existing Admin.'});

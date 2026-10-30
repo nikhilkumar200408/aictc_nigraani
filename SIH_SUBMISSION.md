@@ -57,7 +57,7 @@ This is a prototype and workflow-support system. Its sample records, simulated c
 ## 8. Current prototype limitations
 - Registration domain matching is a consistency check; it does not prove domain ownership. Admin review is mandatory.
 - Alerts are visible in the platform; outbound email/SMS gateways are not configured in this prototype.
-- Some compliance actions are represented as status transitions; a production rollout should require evidence upload and official verification for every undertaking/renewal type.
+- The prototype stores evidence uploads for undertakings and lease renewals and supports official verification; production should additionally enforce APH-specific document checklists and multi-step sign-off.
 - SLA values and demo pathways require validation against the currently applicable Approval Process Handbook before operational use.
 - Demo date simulation is for evaluation only.
 
